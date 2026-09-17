@@ -711,6 +711,19 @@
   .ga-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 1.4s infinite}
   .ga-wrap{display:flex;flex-direction:column;align-items:center}
 
+
+  /* ===== V15: CHAT REAL ===== */
+  .rusers{display:flex;gap:10px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch}
+  .ruser{flex-shrink:0;width:74px;text-align:center;cursor:pointer}
+  .ruser .rua{width:56px;height:56px;margin:0 auto;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,#34d399,#22d3ee)}
+  .ruser .rua .in{width:100%;height:100%;border-radius:50%;border:2.5px solid #170a24;background:#241338;display:flex;align-items:center;justify-content:center;font-size:24px}
+  .ruser .run{font-size:10px;font-weight:800;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ruser .rur{font-size:8.5px;color:#34d399;font-weight:700}
+  .rlive{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);border-radius:999px;padding:4px 10px;font-size:9.5px;font-weight:800;color:#34d399;margin-bottom:8px}
+  .rlive::before{content:'';width:5px;height:5px;border-radius:50%;background:#34d399;animation:pulse 1.4s infinite}
+  #rchat{position:fixed;inset:0;z-index:105;display:none;flex-direction:column;background:#0e0616;max-width:480px;margin:0 auto}
+  #rchat.open{display:flex}
+
 </style>
 </head>
 <body>
@@ -902,7 +915,10 @@
   <section class="screen" id="scr-salas">
     <div id="rooms-list">
       <div class="kbanner" onclick="go('juega')"><span class="ke">🏆</span><span class="kt">Gran Bono por <b>Ranking</b> — los 20 más activos de la semana reparten ⚡9,600</span><span class="ka">›</span></div>
-      <div class="sect" style="margin-top:8px">Mensajes</div>
+      <div class="sect" style="margin-top:8px">🟢 Candeleros reales — conectados al banco</div>
+      <div class="rlive">PERSONAS DE VERDAD — escríbeles, el chat es real</div>
+      <div class="rusers" id="rusers"><div style="font-size:11px;color:var(--mut);padding:8px">Cargando gente real…</div></div>
+      <div class="sect">Mensajes</div>
       <div class="ibx" onclick="toast('🔥 Candela Oficial: ¡Bienvenida a la noche! Tu bono semanal está activo')">
         <div class="iav ioficial">🔥</div>
         <div class="iin"><div class="inm">Candela Oficial <span class="vf">✓</span></div><div class="ipv">¡Bienvenida a la noche! Reclama tu bono…</div></div>
@@ -930,6 +946,7 @@
       </div>
       <div class="note c" style="margin-top:14px">🎭 <b>100% anónimo.</b> Eres tu apodo. Tu nivel crece si aportas — y <b>nunca se te quita</b>.</div>
       <div class="sect">Salas calientes</div>
+      <div class="room" onclick="openFogata()" style="border-color:rgba(52,211,153,.4)"><div class="ric" style="background:linear-gradient(135deg,#065f46,#f59e0b)">🔥</div><div class="rin"><div class="rn">La Fogata <span style="font-size:8.5px;background:rgba(52,211,153,.18);color:#34d399;border-radius:5px;padding:2px 6px;font-weight:900">REAL</span></div><div class="rd">La primera sala 100% real — lo que escribes, queda</div></div><div class="ron">● vivo</div></div>
       <div class="room" onclick="openRoom('El Chisme 🍵','chisme')"><div class="ric" style="background:linear-gradient(135deg,#4c1d95,#701a75)">🍵</div><div class="rin"><div class="rn">El Chisme</div><div class="rd">Lo que se dice… y lo que no se puede decir</div></div><div class="ron">● 486</div></div>
       <div class="room" onclick="openRoom('Confesiones 🔥','conf')"><div class="ric" style="background:linear-gradient(135deg,#9f1239,#4c0519)">🔥</div><div class="rin"><div class="rn">Confesiones</div><div class="rd">Anónimo total. Suéltalo aquí</div></div><div class="ron">● 219</div></div>
       <div class="room" onclick="openRoom('Miami Connect ✈️','miami')"><div class="ric" style="background:linear-gradient(135deg,#0e7490,#1e3a8a)">✈️</div><div class="rin"><div class="rn">Miami Connect</div><div class="rd">La diáspora y la isla, mismo chat</div></div><div class="ron">● 731</div></div>
@@ -1257,6 +1274,18 @@
 </div>
 
 <!-- PRIVATE CHAT -->
+<div id="rchat">
+  <div class="pc-head">
+    <button class="pc-back" onclick="closeRChat()">‹</button>
+    <div class="pc-av" style="background:linear-gradient(135deg,#34d399,#22d3ee)"><div class="in" id="rc-av">👤</div></div>
+    <div><div class="pc-nm" id="rc-nm">—</div><div class="pc-st" id="rc-st">chat real · conectado al banco</div></div>
+  </div>
+  <div class="pc-msgs" id="rc-msgs"></div>
+  <div class="pc-in">
+    <input id="rc-in" placeholder="Escribe de verdad…" maxlength="300" onkeydown="if(event.key==='Enter')sendRC()">
+    <button class="pc-send" onclick="sendRC()">➤</button>
+  </div>
+</div>
 <div id="pchat">
   <div class="pc-head">
     <button class="pc-back" onclick="closePChat()">‹</button>
@@ -2119,6 +2148,7 @@ async function gaGo(){
       guardaSesion(r.data);
     }
     await cargaMi();
+    cargaReales();
     $('gate').classList.remove('open');
     toast(esNuevo? '🔥 ¡Cuenta creada, '+(MI?MI.nombre:'')+'! Tus ⚡'+(MI?fmt(MI.chispas):'250')+' son reales' : '🔥 ¡De vuelta, '+(MI?MI.nombre:'')+'!');
     if(esNuevo) confetti();
@@ -2135,7 +2165,7 @@ async function recuperaSesion(){
     const s=store.get('candela_ses'); if(!s) return false;
     const tok=JSON.parse(s);
     const r=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:tok.refresh_token})});
-    if(r.ok){ guardaSesion(r.data); await cargaMi(); return true; }
+    if(r.ok){ guardaSesion(r.data); await cargaMi(); cargaReales(); return true; }
   }catch(e){}
   return false;
 }
@@ -2145,6 +2175,66 @@ async function regaloReal(monto,tipo){
   if(r.ok&&r.data==='ok'){ MI.chispas-=monto; return true; }
   if(r.data==='sin-saldo'){ toast('⚡ Saldo real insuficiente — recarga en Wallet'); bal=MI.chispas; renderBal(); return false; }
   return true;
+}
+
+
+/* ===== V15: CHAT REAL ===== */
+let rcCon=null, rcSala=null, rcTimer=null, rcUlt=0;
+async function cargaReales(){
+  const box=$('rusers'); if(!box) return;
+  const r=await sbFetch('/rest/v1/perfiles?select=id,nombre,rol&order=creado.desc&limit=20',{});
+  if(!r.ok||!r.data){ box.innerHTML='<div style="font-size:11px;color:var(--mut);padding:8px">Sin conexión al banco</div>'; return; }
+  const gente=r.data.filter(u=>!MI||u.id!==MI.id);
+  if(!gente.length){ box.innerHTML='<div style="font-size:11px;color:var(--mut);padding:8px">Aún nadie más — invita a tu gente 😏</div>'; return; }
+  box.innerHTML=gente.map(u=>{
+    const emo=u.rol==='creadora'?'💃':(u.nombre==='La Casa Candela'?'🏛️':'😎');
+    return '<div class="ruser" onclick="openRChat(\''+u.id+'\',\''+u.nombre.replace(/'/g,'')+'\',\''+emo+'\')"><div class="rua"><div class="in">'+emo+'</div></div><div class="run">'+u.nombre+'</div><div class="rur">'+(u.rol==='creadora'?'creadora':'candelero')+'</div></div>';
+  }).join('');
+}
+function pintaRC(msgs){
+  const box=$('rc-msgs'); if(!box) return;
+  box.innerHTML=msgs.map(m=>{
+    const mio=MI&&m.de===MI.id;
+    return '<div class="pm '+(mio?'me':'them')+'">'+String(m.texto).replace(/</g,'&lt;')+'</div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+  if(msgs.length) rcUlt=msgs[msgs.length-1].id;
+}
+async function refrescaRC(){
+  if(!SESION) return;
+  let q;
+  if(rcSala) q='/rest/v1/mensajes?select=*&sala=eq.'+rcSala+'&order=creado.asc&limit=80';
+  else if(rcCon&&MI) q='/rest/v1/mensajes?select=*&sala=is.null&or=(and(de.eq.'+MI.id+',para.eq.'+rcCon+'),and(de.eq.'+rcCon+',para.eq.'+MI.id+'))&order=creado.asc&limit=80';
+  else return;
+  const r=await sbFetch(q,{});
+  if(r.ok&&r.data) pintaRC(r.data);
+}
+function openRChat(id,nombre,emo){
+  if(!SESION){ toast('🔑 Crea tu cuenta primero para chatear de verdad'); $('gate').classList.add('open'); return; }
+  rcCon=id; rcSala=null;
+  $('rc-nm').textContent=nombre; $('rc-av').textContent=emo||'👤';
+  $('rc-st').textContent='chat real · privado';
+  $('rc-msgs').innerHTML='<div style="font-size:11px;color:var(--mut);text-align:center;padding:16px">Cargando…</div>';
+  $('rchat').classList.add('open'); lockScroll();
+  refrescaRC(); clearInterval(rcTimer); rcTimer=setInterval(refrescaRC,3000);
+}
+function openFogata(){
+  if(!SESION){ toast('🔑 Crea tu cuenta primero para entrar a La Fogata'); $('gate').classList.add('open'); return; }
+  rcSala='fogata'; rcCon=null;
+  $('rc-nm').textContent='La Fogata 🔥'; $('rc-av').textContent='🔥';
+  $('rc-st').textContent='sala real · todos los candeleros';
+  $('rc-msgs').innerHTML='<div style="font-size:11px;color:var(--mut);text-align:center;padding:16px">Cargando…</div>';
+  $('rchat').classList.add('open'); lockScroll();
+  refrescaRC(); clearInterval(rcTimer); rcTimer=setInterval(refrescaRC,3000);
+}
+function closeRChat(){ $('rchat').classList.remove('open'); clearInterval(rcTimer); rcTimer=null; rcCon=null; rcSala=null; unlockScroll(); }
+async function sendRC(){
+  const inp=$('rc-in'); const t=inp.value.trim(); if(!t||!SESION||!MI) return;
+  inp.value='';
+  const body=rcSala? {de:MI.id,sala:rcSala,texto:t} : {de:MI.id,para:rcCon,texto:t};
+  const r=await sbFetch('/rest/v1/mensajes',{method:'POST',body:JSON.stringify(body)});
+  if(!r.ok){ toast('No salió — revisa tu conexión'); inp.value=t; return; }
+  refrescaRC();
 }
 
 function enterApp(){
