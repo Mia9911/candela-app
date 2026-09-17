@@ -686,6 +686,31 @@
   #flashgift .fgt b{font-size:13px}
   #flashgift .fgcd{background:#3a2500;color:#ffd76b;font-weight:900;font-size:14px;border-radius:999px;padding:6px 11px;flex-shrink:0}
 
+
+  /* ===== V14: ENTRADA REAL (login/registro) ===== */
+  #gate{position:fixed;inset:0;z-index:290;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(130% 100% at 50% 0%,#4a0d2e 0%,#2d0a3d 35%,#160518 70%,#000 100%);padding:26px;overflow-y:auto}
+  #gate.open{display:flex}
+  .ga-card{width:100%;max-width:360px;background:rgba(255,255,255,.05);border:1px solid rgba(255,45,120,.35);border-radius:26px;padding:24px 20px;backdrop-filter:blur(12px)}
+  .ga-t{font-size:22px;font-weight:900;text-align:center;background:linear-gradient(135deg,#ff2d78,#ff8a1e,#f5c044);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ga-s{font-size:12px;color:#a89fc0;text-align:center;margin-top:5px;line-height:1.5}
+  .ga-in{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px 16px;color:#fff;font-size:14px;outline:none;margin-top:11px}
+  .ga-in:focus{border-color:#ff2d78}
+  .ga-rol{display:flex;gap:9px;margin-top:12px}
+  .ga-r{flex:1;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.14);border-radius:15px;padding:12px 6px;text-align:center;cursor:pointer;transition:.15s}
+  .ga-r.on{border-color:#ff2d78;background:rgba(255,45,120,.14);box-shadow:0 0 14px rgba(255,45,120,.3)}
+  .ga-r .re{font-size:24px}
+  .ga-r .rt{font-size:11px;font-weight:800;margin-top:4px}
+  .ga-r .rd{font-size:9px;color:#a89fc0;margin-top:2px}
+  .ga-btn{width:100%;background:linear-gradient(135deg,#ff2d78,#ff8a1e);border:none;border-radius:999px;color:#fff;font-weight:900;font-size:15px;padding:15px;cursor:pointer;margin-top:14px;box-shadow:0 8px 30px rgba(255,45,120,.5)}
+  .ga-btn:disabled{opacity:.6}
+  .ga-alt{text-align:center;font-size:12px;color:#a89fc0;margin-top:13px}
+  .ga-alt b{color:#ff8fb8;cursor:pointer}
+  .ga-err{display:none;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.4);border-radius:12px;padding:10px 13px;font-size:12px;color:#ffb3b3;margin-top:11px;line-height:1.5}
+  .ga-err.on{display:block}
+  .ga-live{display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);border-radius:999px;padding:5px 12px;font-size:10px;font-weight:800;color:#34d399;margin:0 auto 12px}
+  .ga-live::before{content:'';width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 1.4s infinite}
+  .ga-wrap{display:flex;flex-direction:column;align-items:center}
+
 </style>
 </head>
 <body>
@@ -714,6 +739,27 @@
 </div>
 
 <!-- BONO BIENVENIDA -->
+
+<div id="gate">
+  <div class="ga-wrap">
+  <div class="ga-live">CONECTADA AL BANCO CANDELA — CUENTAS REALES</div>
+  <div class="ga-card">
+    <div class="ga-t" id="ga-title">Crea tu cuenta</div>
+    <div class="ga-s" id="ga-sub">Tu saldo y tus Chispas son reales desde hoy. Bono de bienvenida: ⚡250</div>
+    <input class="ga-in" id="ga-nombre" placeholder="Tu nombre o apodo" maxlength="24">
+    <input class="ga-in" id="ga-email" placeholder="Tu correo" type="email" autocapitalize="none">
+    <input class="ga-in" id="ga-pass" placeholder="Contraseña (mínimo 6)" type="password">
+    <div class="ga-rol" id="ga-roles">
+      <div class="ga-r on" data-rol="chico" onclick="gaRol(this)"><div class="re">😎</div><div class="rt">Entro a disfrutar</div><div class="rd">regalos, match, lives</div></div>
+      <div class="ga-r" data-rol="creadora" onclick="gaRol(this)"><div class="re">💃</div><div class="rt">Vengo a brillar</div><div class="rd">gana desde el minuto 1</div></div>
+    </div>
+    <div class="ga-err" id="ga-err"></div>
+    <button class="ga-btn" id="ga-go" onclick="gaGo()">🔥 CREAR MI CUENTA</button>
+    <div class="ga-alt" id="ga-alt">¿Ya tienes cuenta? <b onclick="gaMode(false)">Entra aquí</b></div>
+  </div>
+  </div>
+</div>
+
 <div id="bono">
   <div class="bcard" style="background:linear-gradient(160deg,#2d0a3d,#4a0d1e);border-color:rgba(255,120,30,.55)">
     <div style="width:96px;height:96px;margin:0 auto;border-radius:50%;background-size:cover;background-position:center;border:2.5px solid rgba(245,192,68,.6);box-shadow:0 0 34px rgba(255,100,20,.55);animation:fenixfloat 3s ease-in-out infinite" data-img="fenixhead"></div>
@@ -1699,6 +1745,7 @@ function closeTray(){ $('gtray').classList.remove('open'); }
 function sendGift(emoji,name,cost){
   if(bal<cost){ toast('⚡ Saldo insuficiente — recarga en Wallet'); return; }
   bal-=cost; renderBal();
+  regaloReal(cost,'regalo:'+name);
   const f=document.createElement('div'); f.className='fly'; f.textContent=emoji;
   f.style.left=(28+Math.random()*44)+'%'; f.style.bottom='190px';
   document.body.appendChild(f); setTimeout(()=>f.remove(),1150);
@@ -2023,11 +2070,89 @@ setInterval(()=>{ const el=$('mnum'); if(!el) return; let n=parseInt(el.textCont
     sp.appendChild(e);
   }
 })();
+
+/* ===== V14: BANCO REAL (Supabase) ===== */
+const SB_URL='https://hwnfssjgrfbchugwejfg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bmZzc2pncmZiY2h1Z3dlamZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0ODIxMzYsImV4cCI6MjEwNTA1ODEzNn0.bd_lne7PVQG-qHG_SGzOa_UvQuMK1aLOd3WoI0IfXuI';
+const CASA_ID='839a5e2e-fe5e-4ad2-b055-86942347fe4e';
+let SESION=null, MI=null, esNuevo=true;
+
+async function sbFetch(path, opts={}){
+  const heads={'apikey':SB_KEY,'Content-Type':'application/json'};
+  if(SESION) heads['Authorization']='Bearer '+SESION.access_token;
+  else heads['Authorization']='Bearer '+SB_KEY;
+  const r=await fetch(SB_URL+path,{...opts,headers:{...heads,...(opts.headers||{})}});
+  let d=null; try{ d=await r.json(); }catch(e){}
+  return {ok:r.ok, status:r.status, data:d};
+}
+function guardaSesion(s){ SESION=s; try{ store.set('candela_ses', JSON.stringify({access_token:s.access_token, refresh_token:s.refresh_token})); }catch(e){} }
+function gaRol(el){ document.querySelectorAll('.ga-r').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }
+function gaMode(nuevo){
+  esNuevo=nuevo;
+  $('ga-title').textContent = nuevo? 'Crea tu cuenta' : 'Bienvenida de vuelta';
+  $('ga-sub').textContent = nuevo? 'Tu saldo y tus Chispas son reales desde hoy. Bono de bienvenida: ⚡250' : 'Entra con tu correo y contraseña';
+  $('ga-nombre').style.display = nuevo? 'block':'none';
+  $('ga-roles').style.display = nuevo? 'flex':'none';
+  $('ga-go').textContent = nuevo? '🔥 CREAR MI CUENTA' : '🔥 ENTRAR';
+  $('ga-alt').innerHTML = nuevo? '¿Ya tienes cuenta? <b onclick="gaMode(false)">Entra aquí</b>' : '¿Primera vez? <b onclick="gaMode(true)">Crea tu cuenta</b>';
+  $('ga-err').classList.remove('on');
+}
+function gaError(m){ const e=$('ga-err'); e.textContent=m; e.classList.add('on'); }
+async function gaGo(){
+  const email=$('ga-email').value.trim(), pass=$('ga-pass').value;
+  if(!email||!email.includes('@')) return gaError('Escribe un correo válido');
+  if(!pass||pass.length<6) return gaError('La contraseña necesita mínimo 6 caracteres');
+  const btn=$('ga-go'); btn.disabled=true; btn.textContent='Conectando…';
+  try{
+    if(esNuevo){
+      const nombre=$('ga-nombre').value.trim();
+      if(!nombre){ btn.disabled=false; btn.textContent='🔥 CREAR MI CUENTA'; return gaError('Dime tu nombre o apodo'); }
+      const rol=document.querySelector('.ga-r.on').dataset.rol;
+      const r=await sbFetch('/auth/v1/signup',{method:'POST',body:JSON.stringify({email,password:pass,data:{nombre,rol}})});
+      if(!r.ok){ btn.disabled=false; btn.textContent='🔥 CREAR MI CUENTA';
+        return gaError(r.data&&r.data.error_code==='user_already_exists'?'Ese correo ya tiene cuenta — toca "Entra aquí" abajo':'No se pudo crear: '+(r.data&&(r.data.msg||r.data.message)||'revisa tu conexión')); }
+      guardaSesion(r.data);
+      if(rol==='creadora') await sbFetch('/rest/v1/perfiles?id=eq.'+r.data.user.id,{method:'PATCH',body:JSON.stringify({rol:'creadora'})});
+    } else {
+      const r=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password:pass})});
+      if(!r.ok){ btn.disabled=false; btn.textContent='🔥 ENTRAR'; return gaError('Correo o contraseña incorrectos'); }
+      guardaSesion(r.data);
+    }
+    await cargaMi();
+    $('gate').classList.remove('open');
+    toast(esNuevo? '🔥 ¡Cuenta creada, '+(MI?MI.nombre:'')+'! Tus ⚡'+(MI?fmt(MI.chispas):'250')+' son reales' : '🔥 ¡De vuelta, '+(MI?MI.nombre:'')+'!');
+    if(esNuevo) confetti();
+  }catch(e){ gaError('Sin conexión — intenta de nuevo'); }
+  btn.disabled=false; btn.textContent=esNuevo?'🔥 CREAR MI CUENTA':'🔥 ENTRAR';
+}
+async function cargaMi(){
+  if(!SESION) return;
+  const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
+  if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal(); }
+}
+async function recuperaSesion(){
+  try{
+    const s=store.get('candela_ses'); if(!s) return false;
+    const tok=JSON.parse(s);
+    const r=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:tok.refresh_token})});
+    if(r.ok){ guardaSesion(r.data); await cargaMi(); return true; }
+  }catch(e){}
+  return false;
+}
+async function regaloReal(monto,tipo){
+  if(!SESION||!MI) return true; /* modo demo si no hay sesion */
+  const r=await sbFetch('/rest/v1/rpc/enviar_regalo',{method:'POST',body:JSON.stringify({receptor:CASA_ID,monto,tipo})});
+  if(r.ok&&r.data==='ok'){ MI.chispas-=monto; return true; }
+  if(r.data==='sin-saldo'){ toast('⚡ Saldo real insuficiente — recarga en Wallet'); bal=MI.chispas; renderBal(); return false; }
+  return true;
+}
+
 function enterApp(){
   $('splash').classList.add('off');
-  if(!store.get('candela_bono')){
-    setTimeout(()=>{ $('bono').classList.add('open'); }, 650);
-  }
+  if(SESION){ return; }
+  recuperaSesion().then(ok=>{
+    if(!ok){ setTimeout(()=>{ $('gate').classList.add('open'); }, 350); }
+  });
 }
 function claimBono(){
   if(store.get('candela_bono')==='1'){ $('bono').classList.remove('open'); return; }
