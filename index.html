@@ -2128,12 +2128,17 @@ const PARTYCHAT=[
  ['gift','Sr_Elegante','envió 💎 Diamante x1 a Melissa'],
  ['msg','Camagueyana','pónganme el asiento 5 que yo canto 😂']
 ];
-function openJitsiRoom(){
+let salaCandela=null;
+async function openJitsiRoom(){
   const seed=(MI&&MI.id)?MI.id:'candela-fiesta-publica';
   const room='Candela-Fogata-'+String(seed).replace(/[^a-zA-Z0-9]/g,'').slice(-18);
   const url='https://meet.jit.si/'+room;
+  if(SESION&&MI){
+    const r=await sbFetch('/rest/v1/salas?on_conflict=codigo',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({anfitrion:MI.id,codigo:room,tipo:'fiesta',estado:'abierta'})});
+    if(r.ok&&r.data&&r.data[0]) salaCandela=r.data[0];
+  }
   window.open(url,'_blank','noopener,noreferrer');
-  toast('🔴 Sala real abierta — comparte el enlace con tu gente');
+  toast('🔴 Sala Candela registrada — comparte el enlace con tu gente');
 }
 function openParty(){
   if(!_stageHTML) _stageHTML=$('pr-stage').innerHTML;
