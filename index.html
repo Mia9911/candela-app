@@ -825,7 +825,7 @@
     <div class="tr-sec">⚡ Consumo por acceso</div>
     <div id="tr-accesos"><div class="tr-empty">Cargando…</div></div>
     <div class="tr-sec">💎 Reservas privadas</div>
-    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div>
+    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">🧾 Historial de ventas privadas</div><div id="tr-ventas-hist"><div class="tr-empty">Cargando…</div></div>
   </div>
 </div>
 <div id="cajero">
@@ -2476,13 +2476,14 @@ async function cjEnviar(){
 }
 async function openTrono(){
   $('trono').classList.add('open'); lockScroll();
-  const [pu,ps,pm,pr,pa,pv]=await Promise.all([
+  const [pu,ps,pm,pr,pa,pv,pvh]=await Promise.all([
     sbFetch('/rest/v1/perfiles?select=id,nombre,rol,chispas&order=chispas.desc',{}),
     sbFetch('/rest/v1/solicitudes?select=*&estado=eq.pendiente&order=creado.asc',{}),
     sbFetch('/rest/v1/movimientos?select=*&order=creado.desc&limit=15',{}),
     sbFetch('/rest/v1/salas?select=*&order=creada.desc&limit=12',{}),
     sbFetch('/rest/v1/sala_accesos?select=*&order=entro.desc&limit=12',{}),
-    sbFetch('/rest/v1/reservas_privadas?select=*&estado=eq.pendiente&order=creado.asc',{})
+    sbFetch('/rest/v1/reservas_privadas?select=*&estado=eq.pendiente&order=creado.asc',{}),
+    sbFetch('/rest/v1/reservas_privadas?select=*&order=creado.desc&limit=12',{})
   ]);
   if(pu.ok&&pu.data){
     $('tk-users').textContent=pu.data.length;
@@ -2504,6 +2505,9 @@ async function openTrono(){
     $('tr-accesos').innerHTML=pa.data.length?pa.data.map(a=>'<div class="tr-row"><span>'+(a.estado==='activo'?'⏱️':'✅')+'</span><span class="tn">'+(nombres[a.usuario]||'?')+'<small>'+a.estado+' · '+Math.floor((a.segundos||0)/60)+'m '+((a.segundos||0)%60)+'s</small></span><span class="tc">⚡'+(a.cobrado_chispas||0)+'</span></div>').join(''):'<div class="tr-empty">Sin accesos todavía</div>';
   }  if(pv.ok&&pv.data){
     $('tr-ventas').innerHTML=pv.data.length?pv.data.map(v=>'<div class="tr-row"><span>💎</span><span class="tn">'+(nombres[v.comprador]||'?')+' · $'+v.monto_usd+'<small>'+v.metodo+' · '+v.estado+' · ⚡'+v.chispas+'</small></span><button class="tr-ok" onclick="trVentaResolver('+v.id+',\''+v.comprador+'\','+v.chispas+')">PAGÓ</button><button class="tr-no" onclick="trVentaRechazar('+v.id+')">✕</button></div>').join(''):'<div class="tr-empty">Sin reservas privadas pendientes</div>';
+  }
+  if(pvh.ok&&pvh.data){
+    $('tr-ventas-hist').innerHTML=pvh.data.length?pvh.data.map(v=>'<div class="tr-row"><span>'+(v.estado==='pagada'?'✅':'✕')+'</span><span class="tn">'+(nombres[v.comprador]||'?')+' · $'+v.monto_usd+'<small>'+v.estado+' · '+(v.usado?'usado':'sin usar')+' · '+String(v.creado).slice(0,16).replace('T',' ')+'</small></span><span class="tc">⚡'+v.chispas+'</span></div>').join(''):'<div class="tr-empty">Sin ventas todavía</div>';
   }
 }
 function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
