@@ -762,6 +762,19 @@
   .cj-btn{width:100%;background:linear-gradient(135deg,#ff2d78,#ff8a1e);border:none;border-radius:999px;color:#fff;font-weight:900;font-size:14px;padding:14px;cursor:pointer;margin-top:13px}
   .cj-x{width:100%;background:none;border:none;color:#a89fc0;font-size:12px;font-weight:700;padding:10px;cursor:pointer}
 
+
+  /* ===== V17: CAMARA REAL ===== */
+  #bc-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)}
+  #bc-video.on{display:block}
+  #bc-video.mask{filter:blur(26px) brightness(.75) saturate(1.3)}
+  #bc-video.semi{filter:blur(10px) brightness(.9)}
+  .bc-camoff{position:absolute;top:70px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:8px 16px;font-size:11px;font-weight:800;color:#ffc38a;display:none}
+  .bc-camoff.on{display:block}
+  #vc-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1);z-index:0}
+  #vc-video.on{display:block}
+  #vc-video.mask{filter:blur(30px) brightness(.7) saturate(1.4)}
+  #vcall .vc-fore{position:relative;z-index:2}
+
 </style>
 </head>
 <body>
@@ -1509,6 +1522,8 @@
 
 <!-- PANTALLA TRANSMISORA -->
 <div id="broadcast">
+  <video id="bc-video" autoplay playsinline muted></video>
+  <div class="bc-camoff" id="bc-camoff">📵 Sin permiso de cámara — transmites en modo símbolo</div>
   <div class="bc-cam"><span class="ci" id="bc-ci">🎥</span><p id="bc-hint">Aquí se vería tu cámara.<br>En la app real: transmites, la gente entra y los regalos caen.</p></div>
   <div class="bc-top">
     <span class="bc-red"><span class="dot2"></span>EN VIVO</span>
@@ -1979,7 +1994,7 @@ function setMeta(g){
   updGoal();
   toast('🎯 Meta fijada: ⚡'+fmt(g)+' — Feni la anunció en tu live');
 }
-function updGoal(){
+function updGoal(){ bcAntifazNivel();
   if(!bcGoal) return;
   const pct=Math.min(100,Math.round(bcPool/bcGoal*100));
   $('bc-goal-t').textContent='⚡'+fmt(bcPool)+' / '+fmt(bcGoal);
@@ -2003,6 +2018,34 @@ const BCCHAT=[
 ];
 function openGoLive(){ $('golivesheet').classList.add('open'); lockScroll(); }
 function closeGoLive(){ $('golivesheet').classList.remove('open'); unlockScroll(); }
+
+/* ===== V17: CAMARA REAL ===== */
+let camStream=null;
+async function camOn(videoId, conMic){
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:!!conMic});
+    const v=$(videoId); v.srcObject=camStream; v.classList.add('on');
+    return true;
+  }catch(e){ return false; }
+}
+function camOff(){
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  ['bc-video','vc-video'].forEach(i=>{ const v=$(i); if(v){ v.srcObject=null; v.classList.remove('on','mask','semi'); } });
+  const c=$('bc-camoff'); if(c) c.classList.remove('on');
+}
+function bcAntifazNivel(){
+  /* actualiza el desenfoque segun avance de la meta */
+  const v=$('bc-video'); if(!v||!v.classList.contains('on')||bcMode!=='antifaz') return;
+  if(!bcGoal){ v.classList.add('mask'); return; }
+  const pct=bcPool/bcGoal;
+  v.classList.remove('mask','semi');
+  if(pct>=1){ toastOnce('🎭✨ ¡META CUMPLIDA! El antifaz cayó — cámara clara'); }
+  else if(pct>=0.5){ v.classList.add('semi'); }
+  else { v.classList.add('mask'); }
+}
+let _lastToastOnce='';
+function toastOnce(m){ if(_lastToastOnce===m) return; _lastToastOnce=m; toast(m); confetti(); }
+
 function startBroadcast(mode){
   bcMode=mode; closeGoLive();
   bcSec=0; bcEarn=0; bcVw=0; bcIdx=0;
@@ -2012,6 +2055,14 @@ function startBroadcast(mode){
   bcGoal=0; bcPool=0; $('bc-goalbox').style.display='none';
   clearInterval(bcTimer);
   $('broadcast').classList.add('open'); lockScroll();
+  if(mode!=='audio'){
+    camOn('bc-video', true).then(ok=>{
+      if(ok){
+        $('bc-hint').style.display='none'; $('bc-ci').style.display='none';
+        if(mode==='antifaz'){ $('bc-video').classList.add('mask'); toast('🎭 Tu cámara está BORROSA — se aclara al cumplir la meta'); }
+      } else { $('bc-camoff').classList.add('on'); }
+    });
+  }
   toast('🔴 ¡Estás EN VIVO! Feni avisó a tus seguidores');
   if(mode==='antifaz'){ setTimeout(()=>{ if($('broadcast').classList.contains('open') && !bcGoal) openMeta(); }, 1500); }
   bcTimer=setInterval(()=>{
@@ -2031,6 +2082,8 @@ function startBroadcast(mode){
 }
 function endBroadcast(){
   clearInterval(bcTimer);
+  camOff();
+  $('bc-hint').style.display=''; $('bc-ci').style.display='';
   closeMeta(); closeTray();
   $('broadcast').classList.remove('open'); unlockScroll();
   toast('🏁 Live terminado — ganaste ⚡'+fmt(bcEarn)+' (ya en tu wallet)');
