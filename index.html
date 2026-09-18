@@ -2128,11 +2128,12 @@ const PARTYCHAT=[
  ['gift','Sr_Elegante','envió 💎 Diamante x1 a Melissa'],
  ['msg','Camagueyana','pónganme el asiento 5 que yo canto 😂']
 ];
-let salaCandela=null;
+let salaCandela=null, salaInicio=0;
 async function openJitsiRoom(){
   const seed=(MI&&MI.id)?MI.id:'candela-fiesta-publica';
   const room='Candela-Fogata-'+String(seed).replace(/[^a-zA-Z0-9]/g,'').slice(-18);
   const url='https://meet.jit.si/'+room;
+  salaInicio=Date.now();
   if(SESION&&MI){
     const r=await sbFetch('/rest/v1/salas?on_conflict=codigo',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({anfitrion:MI.id,codigo:room,tipo:'fiesta',estado:'abierta'})});
     if(r.ok&&r.data&&r.data[0]) salaCandela=r.data[0];
@@ -2149,7 +2150,14 @@ function openParty(){
   $('pr-chat').innerHTML=''; partyIdx=0;
   pushParty(); partyTimer=setInterval(pushParty,2100);
 }
-function closeParty(){ $('partyroom').classList.remove('open'); unlockScroll(); clearInterval(partyTimer); closeTray(); }
+async function cerrarSalaCandela(){
+  if(!salaCandela||!SESION) return;
+  const segundos=Math.max(1,Math.round((Date.now()-salaInicio)/1000));
+  await sbFetch('/rest/v1/salas?id=eq.'+salaCandela.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({estado:'cerrada',cerrada:new Date().toISOString(),segundos})});
+  toast('🏁 Sala cerrada · '+Math.floor(segundos/60)+'m '+(segundos%60)+'s registrados');
+  salaCandela=null; salaInicio=0;
+}
+function closeParty(){ cerrarSalaCandela(); $('partyroom').classList.remove('open'); unlockScroll(); clearInterval(partyTimer); closeTray(); }
 function pushParty(){
   const m=PARTYCHAT[partyIdx%PARTYCHAT.length]; partyIdx++;
   const box=$('pr-chat'); const d=document.createElement('div');
