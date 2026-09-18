@@ -812,6 +812,7 @@
       <div class="tr-k"><b id="tk-users">—</b><span>usuarios</span></div>
       <div class="tr-k"><b id="tk-chispas">—</b><span>⚡ en circulación</span></div>
       <div class="tr-k"><b id="tk-pend">—</b><span>solicitudes</span></div>
+      <div class="tr-k"><b id="tk-cobradas">—</b><span>⚡ sesiones</span></div>
     </div>
     <div class="tr-sec">📥 Solicitudes pendientes</div>
     <div id="tr-sols"><div class="tr-empty">Cargando…</div></div>
@@ -2458,6 +2459,8 @@ async function openTrono(){
   }  if(pr.ok&&pr.data){
     $('tr-salas').innerHTML=pr.data.length?pr.data.map(s=>'<div class="tr-row"><span>'+(s.estado==='abierta'?'🔴':'⚪')+'</span><span class="tn">'+(nombres[s.anfitrion]||'?')+'<small>'+s.estado+' · '+Math.floor((s.segundos||0)/60)+'m '+((s.segundos||0)%60)+'s · '+String(s.creada).slice(0,16).replace('T',' ')+'</small></span><span class="tc">'+(s.cobrado_chispas||0)+'⚡</span></div>').join(''):'<div class="tr-empty">Sin salas registradas</div>';
   }  if(pa.ok&&pa.data){
+    const totalCobrado=pa.data.reduce((a,x)=>a+(Number(x.cobrado_chispas)||0),0);
+    $('tk-cobradas').textContent='⚡'+fmt(totalCobrado);
     $('tr-accesos').innerHTML=pa.data.length?pa.data.map(a=>'<div class="tr-row"><span>'+(a.estado==='activo'?'⏱️':'✅')+'</span><span class="tn">'+(nombres[a.usuario]||'?')+'<small>'+a.estado+' · '+Math.floor((a.segundos||0)/60)+'m '+((a.segundos||0)%60)+'s</small></span><span class="tc">⚡'+(a.cobrado_chispas||0)+'</span></div>').join(''):'<div class="tr-empty">Sin accesos todavía</div>';
   }
 }
