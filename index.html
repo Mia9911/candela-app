@@ -2520,12 +2520,9 @@ async function trResolver(id,tipo,usuario,chispas){
   openTrono();
 }
 async function trVentaResolver(id,comprador,chispas){
-  const r=await sbFetch('/rest/v1/rpc/acreditar',{method:'POST',body:JSON.stringify({usuario:comprador,monto:chispas,nota:'privada'})});
-  if(!r.ok||r.data!=='ok'){ toast('No se acreditó — verifica que el pago esté confirmado'); return; }
-  const codigo='Candela-Privada-'+id+'-'+String(comprador).replace(/-/g,'').slice(-6);
-  const expira=new Date(Date.now()+24*60*60*1000).toISOString();
-  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'pagada',pagado:new Date().toISOString(),codigo_sala:codigo,expira})});
-  toast('✅ Pago confirmado · ⚡'+fmt(chispas)+' acreditadas'); openTrono();
+  const r=await sbFetch('/rest/v1/rpc/confirmar_reserva',{method:'POST',body:JSON.stringify({reserva:id})});
+  if(!r.ok||r.data!=='ok'){ toast(r.data==='ya-resuelta'?'⚠️ Esta reserva ya fue procesada':'No se acreditó — verifica el pago'); return; }
+  toast('✅ Pago confirmado · ⚡'+fmt(chispas)+' acreditadas una sola vez'); openTrono();
 }
 async function trVentaRechazar(id){
   await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
