@@ -544,7 +544,7 @@
   .pr-head .prt b{font-size:15px;display:block}
   .pr-head .prt span{font-size:10.5px;color:var(--mut)}
   .pr-head .prx{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:16px;cursor:pointer}
-  .pr-jitsi{border:1px solid rgba(34,211,238,.65);background:rgba(8,145,178,.22);color:#a5f3fc;border-radius:10px;padding:7px 8px;font-size:9px;font-weight:900;letter-spacing:.2px;cursor:pointer}.pr-jitsi:active{transform:scale(.95)}
+  .pr-jitsi{border:1px solid rgba(34,211,238,.65);background:rgba(8,145,178,.22);color:#a5f3fc;border-radius:10px;padding:7px 8px;font-size:9px;font-weight:900;letter-spacing:.2px;cursor:pointer}.pr-jitsi:active{transform:scale(.95)}.pr-sale{border:1px solid rgba(251,191,36,.65);background:rgba(180,83,9,.25);color:#fde68a;border-radius:10px;padding:7px 8px;font-size:9px;font-weight:900;cursor:pointer}.pr-sale:active{transform:scale(.95)}
   .pr-live{background:var(--grad);font-size:8.5px;font-weight:900;border-radius:6px;padding:3px 8px;letter-spacing:1px}
   .pr-stage{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px}
   .seat{text-align:center;cursor:pointer}
@@ -1437,6 +1437,7 @@
     <span class="pr-live">LIVE</span>
     <div class="prt"><b>La Fiesta de Melissa 🇨🇺</b><span>🎧 Sala Candela · regalos activos</span></div>
     <button class="pr-jitsi" onclick="openJitsiRoom()">🔴 SALA REAL</button>
+    <button class="pr-sale" onclick="openPrivateSale()">💎 PRIVADA $2</button>
     <button class="prx" onclick="closeParty()">✕</button>
   </div>
   <div class="pr-stage" id="pr-stage">
@@ -1559,6 +1560,8 @@
     <button class="bc-tool" onclick="toast('🛡️ Moderación: silencia o expulsa con un toque')"><span class="te">🛡️</span>Escudo</button>
   </div>
 </div>
+
+<div id="privsale" style="position:fixed;inset:0;z-index:340;display:none;align-items:flex-end;background:rgba(5,2,10,.78);backdrop-filter:blur(7px)" onclick="if(event.target===this)closePrivateSale()"><div class="gls" style="width:100%;max-width:480px;margin:auto;border-radius:24px 24px 0 0"><h3>💎 Candela Privada · $2</h3><div class="sub">Reserva 15 minutos privados. La dueña confirma tu pago antes de abrirte la sala.</div><div class="glopt" style="cursor:default"><div class="ge" style="background:linear-gradient(135deg,#b45309,#7c2d12)">⚡</div><div class="gt"><b>Acceso privado · ⚡200</b><span>Pago manual por QvaPay, USDT o CUP. No se entrega acceso hasta confirmar.</span></div></div><select id="ps-met" class="cj-in"><option value="QvaPay">QvaPay</option><option value="USDT">USDT</option><option value="CUP">CUP</option></select><button class="cj-send" onclick="submitPrivateSale()">📨 SOLICITAR ACCESO</button><button class="cj-cancel" onclick="closePrivateSale()">Cancelar</button></div></div>
 
 <div id="toast"></div>
 
@@ -2134,6 +2137,18 @@ const PARTYCHAT=[
  ['msg','Camagueyana','pónganme el asiento 5 que yo canto 😂']
 ];
 let salaCandela=null, salaInicio=0;
+async function openPrivateSale(){
+  if(!SESION||!MI){ toast('🔑 Entra a tu cuenta para reservar'); $('gate').classList.add('open'); return; }
+  $('privsale').style.display='flex'; lockScroll();
+}
+function closePrivateSale(){ $('privsale').style.display='none'; unlockScroll(); }
+async function submitPrivateSale(){
+  if(!SESION||!MI) return;
+  const metodo=$('ps-met').value;
+  const r=await sbFetch('/rest/v1/reservas_privadas',{method:'POST',body:JSON.stringify({comprador:MI.id,anfitrion:CASA_ID,monto_usd:2,chispas:200,metodo,detalle:'Candela Privada · 15 minutos'})});
+  if(!r.ok){ toast('No salió la reserva — inténtalo otra vez'); return; }
+  closePrivateSale(); toast('📨 Reserva enviada · paga $2 por '+metodo+' y espera confirmación'); confetti();
+}
 async function openJitsiRoom(){
   const seed=(MI&&MI.id)?MI.id:'candela-fiesta-publica';
   const room='Candela-Fogata-'+String(seed).replace(/[^a-zA-Z0-9]/g,'').slice(-18);
