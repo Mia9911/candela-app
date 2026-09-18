@@ -2512,7 +2512,7 @@ async function openTrono(){
   }
   if(pf.ok&&pf.data){
     const gross=pf.data.reduce((a,x)=>a+(Number(x.monto_usd)||0),0), sparks=pf.data.reduce((a,x)=>a+(Number(x.chispas)||0),0), used=pf.data.filter(x=>x.usado).length, platform=pf.data.reduce((a,x)=>a+(Number(x.plataforma_usd)||0),0), host=pf.data.reduce((a,x)=>a+(Number(x.anfitrion_usd)||0),0);
-    $('tr-fin').innerHTML='<div class="tr-k"><b>$'+gross.toFixed(2)+'</b><span>ventas brutas</span></div><div class="tr-k"><b>$'+platform.toFixed(2)+'</b><span>margen Candela</span></div><div class="tr-k"><b>$'+host.toFixed(2)+'</b><span>parte anfitrionas</span></div><div class="tr-k"><b>⚡'+fmt(sparks)+'</b><span>entregadas</span></div><div class="tr-k"><b>'+pf.data.length+'</b><span>ventas pagadas</span></div><div class="tr-k"><b>'+used+'</b><span>accesos usados</span></div>';
+    $('tr-fin').innerHTML='<div class="tr-k"><b>$'+gross.toFixed(2)+'</b><span>ventas brutas</span></div><div class="tr-k"><b>$'+platform.toFixed(2)+'</b><span>margen Candela</span></div><div class="tr-k"><b>$'+host.toFixed(2)+'</b><span>pendiente anfitrionas</span></div><div class="tr-k"><b>⚡'+fmt(sparks)+'</b><span>entregadas</span></div><div class="tr-k"><b>'+pf.data.length+'</b><span>ventas pagadas</span></div><div class="tr-k"><b>'+used+'</b><span>accesos usados</span></div>';
   }
 }
 function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
