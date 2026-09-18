@@ -2337,7 +2337,13 @@ async function cargaReservas(){
   const r=await sbFetch('/rest/v1/reservas_privadas?select=*&comprador=eq.'+MI.id+'&order=creado.desc&limit=5',{});
   if(!r.ok||!r.data||!r.data.length) return;
   $('private-access').style.display='block';
-  $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · expira '+String(v.expira||'').slice(0,16).replace('T',' ')+'<button class="tr-ok" style="float:right" onclick="window.open(\'https://meet.jit.si/'+v.codigo_sala+'\',\'_blank\')">ENTRAR</button></div>':'<div style="font-size:11px;margin-top:7px">⏳ Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+'</div>').join('');
+  $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'&&!v.usado?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · 15 minutos<button class="tr-ok" style="float:right" onclick="usarReserva('+v.id+')">ENTRAR</button></div>':v.estado==='pagada'&&v.usado?'<div style="font-size:11px;margin-top:7px">🔒 Acceso utilizado · sesión consumida</div>':'<div style="font-size:11px;margin-top:7px">⏳ Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+'</div>').join('');
+}
+async function usarReserva(id){
+  const r=await sbFetch('/rest/v1/rpc/usar_reserva',{method:'POST',body:JSON.stringify({reserva:id})});
+  if(!r.ok||!r.data||r.data==='no-disponible'){ toast('Este acceso ya fue usado o expiró'); cargaReservas(); return; }
+  const codigo=r.data; window.open('https://meet.jit.si/'+codigo,'_blank','noopener,noreferrer');
+  toast('🔴 Acceso abierto · 15 minutos'); cargaReservas();
 }
 async function recuperaSesion(){
   try{
