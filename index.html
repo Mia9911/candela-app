@@ -1199,6 +1199,7 @@
         <button class="w-out" onclick="openCajero('retiro')">Retirar</button>
       </div>
     </div>
+    <div id="private-access" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(180,83,9,.24),rgba(124,45,18,.18));border:1px solid rgba(251,191,36,.42);border-radius:16px;padding:13px"><div style="font-weight:900;color:#fde68a">💎 Mis accesos privados</div><div id="private-access-list" style="margin-top:8px"></div></div>
     <div class="sect">Tu centro de dinero</div>
     <div class="wmenu">
       <div class="wm" onclick="toast('💰 Retirar: 1 vez al día · tú eliges el monto (desde $5) · 1er retiro EXPRÉS <24h')"><div class="we" style="background:linear-gradient(135deg,#15803d,#166534)">💰</div><div class="wn">Retirar<small>1 vez al día · el monto que tú elijas (desde $5) · 1er retiro exprés &lt;24h 🚀</small></div><span class="wa">›</span></div>
@@ -2328,7 +2329,15 @@ async function cargaMi(){
   if(!SESION) return;
   const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
   if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal();
-    if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; } }
+    if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; }
+    cargaReservas(); }
+}
+async function cargaReservas(){
+  if(!SESION||!MI||!$('private-access')) return;
+  const r=await sbFetch('/rest/v1/reservas_privadas?select=*&comprador=eq.'+MI.id+'&order=creado.desc&limit=5',{});
+  if(!r.ok||!r.data||!r.data.length) return;
+  $('private-access').style.display='block';
+  $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · expira '+String(v.expira||'').slice(0,16).replace('T',' ')+'<button class="tr-ok" style="float:right" onclick="window.open(\'https://meet.jit.si/'+v.codigo_sala+'\',\'_blank\')">ENTRAR</button></div>':'<div style="font-size:11px;margin-top:7px">⏳ Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+'</div>').join('');
 }
 async function recuperaSesion(){
   try{
@@ -2496,7 +2505,9 @@ async function trResolver(id,tipo,usuario,chispas){
 async function trVentaResolver(id,comprador,chispas){
   const r=await sbFetch('/rest/v1/rpc/acreditar',{method:'POST',body:JSON.stringify({usuario:comprador,monto:chispas,nota:'privada'})});
   if(!r.ok||r.data!=='ok'){ toast('No se acreditó — verifica que el pago esté confirmado'); return; }
-  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'pagada',pagado:new Date().toISOString()})});
+  const codigo='Candela-Privada-'+id+'-'+String(comprador).replace(/-/g,'').slice(-6);
+  const expira=new Date(Date.now()+24*60*60*1000).toISOString();
+  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'pagada',pagado:new Date().toISOString(),codigo_sala:codigo,expira})});
   toast('✅ Pago confirmado · ⚡'+fmt(chispas)+' acreditadas'); openTrono();
 }
 async function trVentaRechazar(id){
