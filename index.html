@@ -2481,7 +2481,7 @@ async function openTrono(){
     $('tk-cobradas').textContent='⚡'+fmt(totalCobrado);
     $('tr-accesos').innerHTML=pa.data.length?pa.data.map(a=>'<div class="tr-row"><span>'+(a.estado==='activo'?'⏱️':'✅')+'</span><span class="tn">'+(nombres[a.usuario]||'?')+'<small>'+a.estado+' · '+Math.floor((a.segundos||0)/60)+'m '+((a.segundos||0)%60)+'s</small></span><span class="tc">⚡'+(a.cobrado_chispas||0)+'</span></div>').join(''):'<div class="tr-empty">Sin accesos todavía</div>';
   }  if(pv.ok&&pv.data){
-    $('tr-ventas').innerHTML=pv.data.length?pv.data.map(v=>'<div class="tr-row"><span>💎</span><span class="tn">'+(nombres[v.comprador]||'?')+' · $'+v.monto_usd+'<small>'+v.metodo+' · '+v.estado+' · ⚡'+v.chispas+'</small></span><span class="tc">PEND</span></div>').join(''):'<div class="tr-empty">Sin reservas privadas pendientes</div>';
+    $('tr-ventas').innerHTML=pv.data.length?pv.data.map(v=>'<div class="tr-row"><span>💎</span><span class="tn">'+(nombres[v.comprador]||'?')+' · $'+v.monto_usd+'<small>'+v.metodo+' · '+v.estado+' · ⚡'+v.chispas+'</small></span><button class="tr-ok" onclick="trVentaResolver('+v.id+',\''+v.comprador+'\','+v.chispas+')">PAGÓ</button><button class="tr-no" onclick="trVentaRechazar('+v.id+')">✕</button></div>').join(''):'<div class="tr-empty">Sin reservas privadas pendientes</div>';
   }
 }
 function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
@@ -2492,6 +2492,16 @@ async function trResolver(id,tipo,usuario,chispas){
   await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'resuelta'})});
   toast(tipo==='recarga'?'✅ ⚡'+fmt(chispas)+' acreditadas':'✅ Retiro marcado como pagado');
   openTrono();
+}
+async function trVentaResolver(id,comprador,chispas){
+  const r=await sbFetch('/rest/v1/rpc/acreditar',{method:'POST',body:JSON.stringify({usuario:comprador,monto:chispas,nota:'privada'})});
+  if(!r.ok||r.data!=='ok'){ toast('No se acreditó — verifica que el pago esté confirmado'); return; }
+  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'pagada',pagado:new Date().toISOString()})});
+  toast('✅ Pago confirmado · ⚡'+fmt(chispas)+' acreditadas'); openTrono();
+}
+async function trVentaRechazar(id){
+  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
+  toast('Reserva privada rechazada'); openTrono();
 }
 async function trRechazar(id){
   await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
