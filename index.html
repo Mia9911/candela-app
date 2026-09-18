@@ -819,6 +819,8 @@
     <div id="tr-users"><div class="tr-empty">Cargando…</div></div>
     <div class="tr-sec">📒 Últimos movimientos</div>
     <div id="tr-movs"><div class="tr-empty">Cargando…</div></div>
+    <div class="tr-sec">🔴 Salas y sesiones reales</div>
+    <div id="tr-salas"><div class="tr-empty">Cargando…</div></div>
   </div>
 </div>
 <div id="cajero">
@@ -2432,10 +2434,11 @@ async function cjEnviar(){
 }
 async function openTrono(){
   $('trono').classList.add('open'); lockScroll();
-  const [pu,ps,pm]=await Promise.all([
+  const [pu,ps,pm,pr]=await Promise.all([
     sbFetch('/rest/v1/perfiles?select=id,nombre,rol,chispas&order=chispas.desc',{}),
     sbFetch('/rest/v1/solicitudes?select=*&estado=eq.pendiente&order=creado.asc',{}),
-    sbFetch('/rest/v1/movimientos?select=*&order=creado.desc&limit=15',{})
+    sbFetch('/rest/v1/movimientos?select=*&order=creado.desc&limit=15',{}),
+    sbFetch('/rest/v1/salas?select=*&order=creada.desc&limit=12',{})
   ]);
   if(pu.ok&&pu.data){
     $('tk-users').textContent=pu.data.length;
@@ -2449,6 +2452,8 @@ async function openTrono(){
   } else { $('tr-sols').innerHTML='<div class="tr-empty">Corre el SQL del Trono para activar solicitudes</div>'; $('tk-pend').textContent='—'; }
   if(pm.ok&&pm.data){
     $('tr-movs').innerHTML=pm.data.length?pm.data.map(m=>'<div class="tr-row"><span>⚡</span><span class="tn">'+(nombres[m.de]||'?')+' → '+(nombres[m.para]||'?')+'<small>'+m.tipo+' · '+String(m.creado).slice(0,16).replace('T',' ')+'</small></span><span class="tc">'+fmt(m.monto)+'</span></div>').join(''):'<div class="tr-empty">Sin movimientos aún</div>';
+  }  if(pr.ok&&pr.data){
+    $('tr-salas').innerHTML=pr.data.length?pr.data.map(s=>'<div class="tr-row"><span>'+(s.estado==='abierta'?'🔴':'⚪')+'</span><span class="tn">'+(nombres[s.anfitrion]||'?')+'<small>'+s.estado+' · '+Math.floor((s.segundos||0)/60)+'m '+((s.segundos||0)%60)+'s · '+String(s.creada).slice(0,16).replace('T',' ')+'</small></span><span class="tc">'+(s.cobrado_chispas||0)+'⚡</span></div>').join(''):'<div class="tr-empty">Sin salas registradas</div>';
   }
 }
 function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
