@@ -724,6 +724,44 @@
   #rchat{position:fixed;inset:0;z-index:105;display:none;flex-direction:column;background:#0e0616;max-width:480px;margin:0 auto}
   #rchat.open{display:flex}
 
+
+  /* ===== V16: EL TRONO + CAJERO ===== */
+  #trono{position:fixed;inset:0;z-index:280;display:none;flex-direction:column;background:#0a0410;max-width:480px;margin:0 auto;overflow-y:auto}
+  #trono.open{display:flex}
+  .tr-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,#2a1205,#3b0764);border-bottom:1px solid rgba(245,192,68,.4)}
+  .tr-head h2{font-size:17px;font-weight:900;background:linear-gradient(135deg,#f5c044,#ff8a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tr-x{margin-left:auto;background:rgba(0,0,0,.4);border:none;border-radius:50%;width:34px;height:34px;color:#fff;font-size:15px;cursor:pointer}
+  .tr-body{padding:14px 16px 40px}
+  .tr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .tr-k{background:rgba(255,255,255,.05);border:1px solid rgba(245,192,68,.25);border-radius:15px;padding:12px 8px;text-align:center}
+  .tr-k b{font-size:17px;font-weight:900;color:#f5c044;display:block}
+  .tr-k span{font-size:9px;color:#a89fc0;text-transform:uppercase;letter-spacing:1px}
+  .tr-sec{font-size:11px;font-weight:900;letter-spacing:1.4px;color:#f5c044;text-transform:uppercase;margin:18px 0 9px}
+  .tr-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:11px 13px;margin-bottom:7px;font-size:12.5px}
+  .tr-row .tn{font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tr-row .tc{color:#f5c044;font-weight:900}
+  .tr-row .tr-ok{background:linear-gradient(135deg,#34d399,#22d3ee);border:none;border-radius:999px;color:#04222a;font-weight:900;font-size:10.5px;padding:7px 12px;cursor:pointer}
+  .tr-row .tr-no{background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.4);border-radius:999px;color:#ffb3b3;font-weight:800;font-size:10.5px;padding:7px 10px;cursor:pointer}
+  .tr-row small{color:#a89fc0;font-size:10px;display:block}
+  .tr-empty{font-size:11.5px;color:#a89fc0;padding:10px 4px}
+  #cajero{position:fixed;inset:0;z-index:270;display:none;align-items:center;justify-content:center;background:rgba(5,2,10,.85);backdrop-filter:blur(8px);padding:22px}
+  #cajero.open{display:flex}
+  .cj-card{width:100%;max-width:360px;background:linear-gradient(160deg,#2b0a3d,#1a0a2e);border:1px solid rgba(255,45,120,.4);border-radius:24px;padding:22px 18px;max-height:86vh;overflow-y:auto}
+  .cj-t{font-size:18px;font-weight:900;text-align:center;background:linear-gradient(135deg,#ff2d78,#ff8a1e);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cj-s{font-size:11.5px;color:#cbb8e0;text-align:center;margin-top:5px;line-height:1.5}
+  .cj-packs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+  .cj-p{background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.14);border-radius:13px;padding:11px 6px;text-align:center;cursor:pointer}
+  .cj-p.on{border-color:#f5c044;background:rgba(245,192,68,.1)}
+  .cj-p b{font-size:14px;display:block}
+  .cj-p span{font-size:10px;color:#f5c044;font-weight:800}
+  .cj-met{display:flex;gap:7px;margin-top:12px}
+  .cj-m{flex:1;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 4px;text-align:center;font-size:10.5px;font-weight:800;cursor:pointer}
+  .cj-m.on{border-color:#ff2d78;background:rgba(255,45,120,.12)}
+  .cj-in{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.16);border-radius:13px;padding:12px 14px;color:#fff;font-size:13px;outline:none;margin-top:11px}
+  .cj-info{background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.25);border-radius:13px;padding:11px 13px;font-size:11px;color:#7de6f5;line-height:1.6;margin-top:12px}
+  .cj-btn{width:100%;background:linear-gradient(135deg,#ff2d78,#ff8a1e);border:none;border-radius:999px;color:#fff;font-weight:900;font-size:14px;padding:14px;cursor:pointer;margin-top:13px}
+  .cj-x{width:100%;background:none;border:none;color:#a89fc0;font-size:12px;font-weight:700;padding:10px;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -753,6 +791,39 @@
 
 <!-- BONO BIENVENIDA -->
 
+<div id="trono">
+  <div class="tr-head"><span style="font-size:20px">👑</span><h2>EL TRONO — panel de la dueña</h2><button class="tr-x" onclick="closeTrono()">✕</button></div>
+  <div class="tr-body">
+    <div class="tr-kpis">
+      <div class="tr-k"><b id="tk-users">—</b><span>usuarios</span></div>
+      <div class="tr-k"><b id="tk-chispas">—</b><span>⚡ en circulación</span></div>
+      <div class="tr-k"><b id="tk-pend">—</b><span>solicitudes</span></div>
+    </div>
+    <div class="tr-sec">📥 Solicitudes pendientes</div>
+    <div id="tr-sols"><div class="tr-empty">Cargando…</div></div>
+    <div class="tr-sec">👥 Usuarios y saldos reales</div>
+    <div id="tr-users"><div class="tr-empty">Cargando…</div></div>
+    <div class="tr-sec">📒 Últimos movimientos</div>
+    <div id="tr-movs"><div class="tr-empty">Cargando…</div></div>
+  </div>
+</div>
+<div id="cajero">
+  <div class="cj-card">
+    <div class="cj-t" id="cj-t">Recargar Chispas</div>
+    <div class="cj-s" id="cj-s">Elige tu paquete y cómo pagas. La dueña acredita al confirmar el pago.</div>
+    <div class="cj-packs" id="cj-packs"></div>
+    <input class="cj-in" id="cj-monto" type="number" placeholder="Monto en $ (solo retiros)" style="display:none" min="5">
+    <div class="cj-met" id="cj-mets">
+      <div class="cj-m on" data-m="QvaPay" onclick="cjMet(this)">💳 QvaPay</div>
+      <div class="cj-m" data-m="USDT" onclick="cjMet(this)">🪙 USDT</div>
+      <div class="cj-m" data-m="CUP" onclick="cjMet(this)">🇨🇺 Tarjeta CUP</div>
+    </div>
+    <input class="cj-in" id="cj-det" placeholder="Tu usuario QvaPay / dirección / tarjeta">
+    <div class="cj-info" id="cj-info"></div>
+    <button class="cj-btn" id="cj-go" onclick="cjEnviar()">📨 ENVIAR SOLICITUD</button>
+    <button class="cj-x" onclick="$('cajero').classList.remove('open');unlockScroll()">Cancelar</button>
+  </div>
+</div>
 <div id="gate">
   <div class="ga-wrap">
   <div class="ga-live">CONECTADA AL BANCO CANDELA — CUENTAS REALES</div>
@@ -787,6 +858,7 @@
 <header>
   <div class="logo">CANDELA</div>
   <div class="hdr-r">
+    <div class="lvl-chip" id="tr-btn" onclick="openTrono()" style="display:none;border-color:rgba(245,192,68,.6)">👑 Trono</div>
     <div class="lvl-chip" onclick="go('perfil')">🔥 Fogón</div>
     <div class="wallet" onclick="go('wallet')"><span class="sp">⚡</span><span id="bal">1,250</span></div>
   </div>
@@ -1102,8 +1174,8 @@
         <button onclick="buyPack(6500,50)"><div class="p1">⚡6,500</div><div class="p2">$50 👑</div></button>
       </div>
       <div class="wacts">
-        <button class="w-buy" onclick="toast('💳 Demo: pago vía QvaPay, tarjeta o USDT')">＋ Recargar</button>
-        <button class="w-out" onclick="toast('🏦 Retiras 1 vez al día, el monto que TÚ elijas (desde $5) · 1er retiro exprés <24h')">Retirar</button>
+        <button class="w-buy" onclick="openCajero('recarga')">＋ Recargar</button>
+        <button class="w-out" onclick="openCajero('retiro')">Retirar</button>
       </div>
     </div>
     <div class="sect">Tu centro de dinero</div>
@@ -2158,7 +2230,8 @@ async function gaGo(){
 async function cargaMi(){
   if(!SESION) return;
   const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
-  if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal(); }
+  if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal();
+    if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; } }
 }
 async function recuperaSesion(){
   try{
@@ -2235,6 +2308,86 @@ async function sendRC(){
   const r=await sbFetch('/rest/v1/mensajes',{method:'POST',body:JSON.stringify(body)});
   if(!r.ok){ toast('No salió — revisa tu conexión'); inp.value=t; return; }
   refrescaRC();
+}
+
+
+/* ===== V16: EL TRONO + CAJERO REAL ===== */
+let cjTipo='recarga', cjPack=null;
+const CJ_PACKS=[[2,220,'+50% 1ra vez'],[5,550,''],[10,1150,''],[25,3000,'']];
+function openCajero(tipo){
+  if(!SESION){ toast('🔑 Crea tu cuenta primero'); $('gate').classList.add('open'); return; }
+  cjTipo=tipo; cjPack=null;
+  $('cj-t').textContent = tipo==='recarga'?'Recargar Chispas':'Retirar dinero';
+  $('cj-s').textContent = tipo==='recarga'?'Elige tu paquete y cómo pagas. Se acreditan al confirmarse el pago.':'1 vez al día, desde $5. Di cuánto y a dónde te lo mandamos.';
+  $('cj-packs').style.display = tipo==='recarga'?'grid':'none';
+  $('cj-monto').style.display = tipo==='retiro'?'block':'none';
+  $('cj-det').placeholder = tipo==='recarga'?'Tu usuario QvaPay o referencia del pago':'Dónde cobras: usuario QvaPay / dirección USDT / tarjeta';
+  $('cj-info').innerHTML = tipo==='recarga'
+    ? '💡 Al enviar, te llegan las instrucciones de pago. En cuanto la casa confirme tu pago, tus ⚡ aparecen solas en tu saldo.'
+    : '💡 Tu solicitud entra a la cola del día. Se paga por orden de llegada. 1er retiro exprés: menos de 24h.';
+  if(tipo==='recarga'){
+    $('cj-packs').innerHTML=CJ_PACKS.map((p,i)=>'<div class="cj-p'+(i===0?' on':'')+'" data-i="'+i+'" onclick="cjSel(this)"><b>$'+p[0]+'</b><span>⚡'+fmt(p[1])+(p[2]?' '+p[2]:'')+'</span></div>').join('');
+    cjPack=0;
+  }
+  $('cajero').classList.add('open'); lockScroll();
+}
+function cjSel(el){ document.querySelectorAll('.cj-p').forEach(x=>x.classList.remove('on')); el.classList.add('on'); cjPack=parseInt(el.dataset.i); }
+function cjMet(el){ document.querySelectorAll('.cj-m').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }
+async function cjEnviar(){
+  const met=document.querySelector('.cj-m.on').dataset.m;
+  const det=$('cj-det').value.trim();
+  if(!det) return toast('Dime dónde: usuario, dirección o tarjeta');
+  let usd, chispas;
+  if(cjTipo==='recarga'){
+    usd=CJ_PACKS[cjPack][0]; chispas=CJ_PACKS[cjPack][1];
+    const prev=await sbFetch('/rest/v1/solicitudes?select=id&usuario=eq.'+MI.id+'&tipo=eq.recarga&limit=1',{});
+    if(prev.ok&&prev.data&&prev.data.length===0){ chispas=Math.round(chispas*1.5); }
+  }
+  else {
+    usd=parseFloat($('cj-monto').value);
+    if(!usd||usd<5) return toast('El retiro mínimo es $5');
+    chispas=Math.round(usd*100);
+    if(MI&&chispas>MI.chispas) return toast('No tienes tantas ⚡ — tu saldo: '+fmt(MI.chispas));
+  }
+  const r=await sbFetch('/rest/v1/solicitudes',{method:'POST',body:JSON.stringify({usuario:MI.id,tipo:cjTipo,monto_usd:usd,chispas,metodo:met,detalle:det})});
+  if(!r.ok){ toast('No salió — ¿corriste el SQL del Trono?'); return; }
+  $('cajero').classList.remove('open'); unlockScroll();
+  toast(cjTipo==='recarga'?'📨 ¡Solicitud enviada! Paga $'+usd+' por '+met+' y tus ⚡'+fmt(chispas)+' llegan solas':'📨 ¡Pedido en cola! $'+usd+' por '+met+' — te avisamos al pagarte');
+  confetti();
+}
+async function openTrono(){
+  $('trono').classList.add('open'); lockScroll();
+  const [pu,ps,pm]=await Promise.all([
+    sbFetch('/rest/v1/perfiles?select=id,nombre,rol,chispas&order=chispas.desc',{}),
+    sbFetch('/rest/v1/solicitudes?select=*&estado=eq.pendiente&order=creado.asc',{}),
+    sbFetch('/rest/v1/movimientos?select=*&order=creado.desc&limit=15',{})
+  ]);
+  if(pu.ok&&pu.data){
+    $('tk-users').textContent=pu.data.length;
+    $('tk-chispas').textContent=fmt(pu.data.reduce((a,u)=>a+u.chispas,0));
+    $('tr-users').innerHTML=pu.data.map(u=>'<div class="tr-row"><span>'+(u.rol==='creadora'?'💃':u.rol==='duena'?'👑':'😎')+'</span><span class="tn">'+u.nombre+'<small>'+u.rol+'</small></span><span class="tc">⚡'+fmt(u.chispas)+'</span></div>').join('');
+  }
+  const nombres={}; if(pu.ok&&pu.data) pu.data.forEach(u=>nombres[u.id]=u.nombre);
+  if(ps.ok&&ps.data){
+    $('tk-pend').textContent=ps.data.length;
+    $('tr-sols').innerHTML=ps.data.length?ps.data.map(s=>'<div class="tr-row"><span>'+(s.tipo==='recarga'?'📥':'📤')+'</span><span class="tn">'+(nombres[s.usuario]||'?')+' · $'+s.monto_usd+' ('+s.metodo+')<small>'+s.tipo+' · ⚡'+fmt(s.chispas)+' · '+String(s.detalle).slice(0,26)+'</small></span><button class="tr-ok" onclick="trResolver('+s.id+',\''+s.tipo+'\',\''+s.usuario+'\','+s.chispas+')">'+(s.tipo==='recarga'?'ACREDITAR':'PAGADO')+'</button><button class="tr-no" onclick="trRechazar('+s.id+')">✕</button></div>').join(''):'<div class="tr-empty">Nada pendiente — todo al día 😎</div>';
+  } else { $('tr-sols').innerHTML='<div class="tr-empty">Corre el SQL del Trono para activar solicitudes</div>'; $('tk-pend').textContent='—'; }
+  if(pm.ok&&pm.data){
+    $('tr-movs').innerHTML=pm.data.length?pm.data.map(m=>'<div class="tr-row"><span>⚡</span><span class="tn">'+(nombres[m.de]||'?')+' → '+(nombres[m.para]||'?')+'<small>'+m.tipo+' · '+String(m.creado).slice(0,16).replace('T',' ')+'</small></span><span class="tc">'+fmt(m.monto)+'</span></div>').join(''):'<div class="tr-empty">Sin movimientos aún</div>';
+  }
+}
+function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
+async function trResolver(id,tipo,usuario,chispas){
+  const fn = tipo==='recarga'?'acreditar':'debitar';
+  const r=await sbFetch('/rest/v1/rpc/'+fn,{method:'POST',body:JSON.stringify({usuario,monto:chispas,nota:tipo})});
+  if(!r.ok||r.data!=='ok'){ toast('Error: '+(r.data||'¿corriste el SQL?')); return; }
+  await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'resuelta'})});
+  toast(tipo==='recarga'?'✅ ⚡'+fmt(chispas)+' acreditadas':'✅ Retiro marcado como pagado');
+  openTrono();
+}
+async function trRechazar(id){
+  await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
+  toast('Solicitud rechazada'); openTrono();
 }
 
 function enterApp(){
