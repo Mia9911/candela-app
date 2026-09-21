@@ -808,6 +808,7 @@
 <div id="trono">
   <div class="tr-head"><span style="font-size:20px">👑</span><h2>EL TRONO — panel de la dueña</h2><button class="tr-x" onclick="closeTrono()">✕</button></div>
   <div class="tr-body">
+    <div id="payment-config" style="display:none;margin-bottom:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:11px"><div style="font-weight:900;color:#fde68a">⚙️ Destinos de pago de Candela</div><input id="cfg-qva" class="cj-in" placeholder="QvaPay: usuario o enlace"><input id="cfg-usdt" class="cj-in" placeholder="USDT: wallet"><input id="cfg-cup" class="cj-in" placeholder="CUP: teléfono o cuenta"><button class="cj-send" onclick="guardarDestinosPago()">💾 GUARDAR DESTINOS</button></div>
     <div class="tr-kpis">
       <div class="tr-k"><b id="tk-users">—</b><span>usuarios</span></div>
       <div class="tr-k"><b id="tk-chispas">—</b><span>⚡ en circulación</span></div>
@@ -2333,7 +2334,7 @@ async function cargaMi(){
   const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
   if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal();
     if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; }
-    cargaReservas(); cargaPagosAnfitriona(); preparaMetodoCobro(); }
+    cargaReservas(); cargaPagosAnfitriona(); preparaMetodoCobro(); preparaDestinosPago(); }
 }
 function preparaMetodoCobro(){
   if(!MI||!$('pay-method')) return;
@@ -2500,6 +2501,16 @@ async function cjEnviar(){
   $('cajero').classList.remove('open'); unlockScroll();
   toast(cjTipo==='recarga'?'📨 ¡Solicitud enviada! Paga $'+usd+' por '+met+' y tus ⚡'+fmt(chispas)+' llegan solas':'📨 ¡Pedido en cola! $'+usd+' por '+met+' — te avisamos al pagarte');
   confetti();
+}
+function preparaDestinosPago(){
+  if(!MI||MI.rol!=='duena'||!$('payment-config')) return;
+  $('payment-config').style.display='block'; $('cfg-qva').value=MI.qvapay_detalle||''; $('cfg-usdt').value=MI.usdt_detalle||''; $('cfg-cup').value=MI.cup_detalle||'';
+}
+async function guardarDestinosPago(){
+  if(!MI||MI.rol!=='duena') return;
+  const body={qvapay_detalle:$('cfg-qva').value.trim(),usdt_detalle:$('cfg-usdt').value.trim(),cup_detalle:$('cfg-cup').value.trim()};
+  const r=await sbFetch('/rest/v1/perfiles?id=eq.'+MI.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(body)});
+  if(!r.ok){toast('No se guardaron los destinos');return;} Object.assign(MI,body); toast('✅ Destinos de pago guardados');
 }
 async function openTrono(){
   $('trono').classList.add('open'); lockScroll();
