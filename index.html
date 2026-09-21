@@ -1200,7 +1200,7 @@
       </div>
     </div>
     <div id="private-access" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(180,83,9,.24),rgba(124,45,18,.18));border:1px solid rgba(251,191,36,.42);border-radius:16px;padding:13px"><div style="font-weight:900;color:#fde68a">💎 Mis accesos privados</div><div id="private-access-list" style="margin-top:8px"></div></div>
-    <div id="creator-payouts" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(22,101,52,.24),rgba(6,78,59,.18));border:1px solid rgba(52,211,153,.4);border-radius:16px;padding:13px"><div style="font-weight:900;color:#a7f3d0">💸 Mis pagos de anfitriona</div><div id="creator-payouts-list" style="margin-top:8px"></div></div>
+    <div id="creator-payouts" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(22,101,52,.24),rgba(6,78,59,.18));border:1px solid rgba(52,211,153,.4);border-radius:16px;padding:13px"><div style="font-weight:900;color:#a7f3d0">💸 Mis pagos de anfitriona</div><div id="creator-payouts-list" style="margin-top:8px"></div><div style="margin-top:10px"><select id="pay-method" class="cj-in"><option value="">Método de cobro</option><option value="QvaPay">QvaPay</option><option value="USDT">USDT</option><option value="CUP">CUP</option></select><input id="pay-detail" class="cj-in" placeholder="Usuario, wallet o teléfono"><button class="cj-send" onclick="guardarMetodoCobro()">💾 GUARDAR MÉTODO</button></div></div>
     <div class="sect">Tu centro de dinero</div>
     <div class="wmenu">
       <div class="wm" onclick="toast('💰 Retirar: 1 vez al día · tú eliges el monto (desde $5) · 1er retiro EXPRÉS <24h')"><div class="we" style="background:linear-gradient(135deg,#15803d,#166534)">💰</div><div class="wn">Retirar<small>1 vez al día · el monto que tú elijas (desde $5) · 1er retiro exprés &lt;24h 🚀</small></div><span class="wa">›</span></div>
@@ -2333,7 +2333,20 @@ async function cargaMi(){
   const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
   if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal();
     if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; }
-    cargaReservas(); cargaPagosAnfitriona(); }
+    cargaReservas(); cargaPagosAnfitriona(); preparaMetodoCobro(); }
+}
+function preparaMetodoCobro(){
+  if(!MI||!$('pay-method')) return;
+  if(MI.cobro_metodo) $('pay-method').value=MI.cobro_metodo;
+  if(MI.cobro_detalle) $('pay-detail').value=MI.cobro_detalle;
+}
+async function guardarMetodoCobro(){
+  if(!MI||!SESION) return;
+  const metodo=$('pay-method').value, detalle=$('pay-detail').value.trim();
+  if(!metodo||!detalle) return toast('Elige método y escribe el dato de cobro');
+  const r=await sbFetch('/rest/v1/perfiles?id=eq.'+MI.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({cobro_metodo:metodo,cobro_detalle:detalle})});
+  if(!r.ok){ toast('No se pudo guardar el método'); return; }
+  MI.cobro_metodo=metodo; MI.cobro_detalle=detalle; toast('✅ Método de cobro guardado');
 }
 async function cargaPagosAnfitriona(){
   if(!SESION||!MI||!$('creator-payouts')) return;
