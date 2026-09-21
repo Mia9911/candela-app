@@ -2372,7 +2372,7 @@ async function cargaReservas(){
   const r=await sbFetch('/rest/v1/reservas_privadas?select=*&comprador=eq.'+MI.id+'&order=creado.desc&limit=5',{});
   if(!r.ok||!r.data||!r.data.length) return;
   $('private-access').style.display='block';
-  $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'&&!v.usado?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · 15 minutos<button class="tr-ok" style="float:right" onclick="usarReserva('+v.id+')">ENTRAR</button></div>':v.estado==='pagada'&&v.usado?'<div style="font-size:11px;margin-top:7px">🔒 Acceso utilizado · sesión consumida</div>':'<div style="font-size:11px;margin-top:7px">⏳ Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+'</div>').join('');
+  $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'&&!v.usado?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · 15 minutos<button class="tr-ok" style="float:right" onclick="usarReserva('+v.id+')">ENTRAR</button></div>':v.estado==='pagada'&&v.usado?'<div style="font-size:11px;margin-top:7px">🔒 Acceso utilizado · sesión consumida</div>':'<div style="font-size:11px;margin-top:7px">'+(v.estado==='rechazada'?'❌':'⏳')+' Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+(v.detalle?' · '+String(v.detalle).slice(0,55):'')+'</div>').join('');
 }
 let privateTimer=null, privateSeconds=900, privateCode='';
 async function usarReserva(id){
