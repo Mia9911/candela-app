@@ -2559,9 +2559,11 @@ async function exportarCorte(){
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='candela-corte-'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); toast('⬇️ Corte descargado');
 }
 async function trPagoResolver(id){
-  const r=await sbFetch('/rest/v1/rpc/marcar_pago_anfitriona',{method:'POST',body:JSON.stringify({pago:id,nota:'pagado manual por Mia'})});
+  const ref=prompt('Referencia del pago: ID QvaPay, hash USDT o comprobante CUP');
+  if(!ref||!ref.trim()){ toast('Pago cancelado: falta la referencia'); return; }
+  const r=await sbFetch('/rest/v1/rpc/marcar_pago_anfitriona',{method:'POST',body:JSON.stringify({pago:id,nota:ref.trim()})});
   if(!r.ok||r.data!=='ok'){ toast(r.data==='ya-resuelto'?'⚠️ Ese pago ya fue marcado':'Error: solo la dueña puede marcar pagos'); return; }
-  toast('✅ Pago a anfitriona marcado como entregado'); openTrono();
+  toast('✅ Pago a anfitriona marcado · referencia guardada'); openTrono();
 }
 async function trRechazar(id){
   await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
