@@ -2367,12 +2367,14 @@ async function descargarComprobante(id){
   const x=r.data[0], text='CANDELA · COMPROBANTE DE PAGO\nID: '+x.id+'\nEstado: '+x.estado+'\nMonto: $'+x.monto_usd+'\nChispas: '+x.chispas+'\nCreado: '+x.creado+'\nPagado: '+(x.pagado||'pendiente')+'\nAprobado por: '+(x.pagado_por||'pendiente')+'\nReferencia: '+(x.detalle||'');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})); a.download='candela-comprobante-'+x.id+'.txt'; a.click(); toast('⬇️ Comprobante descargado');
 }
+let reservasPoll=null;
 async function cargaReservas(){
   if(!SESION||!MI||!$('private-access')) return;
   const r=await sbFetch('/rest/v1/reservas_privadas?select=*&comprador=eq.'+MI.id+'&order=creado.desc&limit=5',{});
   if(!r.ok||!r.data||!r.data.length) return;
   $('private-access').style.display='block';
   $('private-access-list').innerHTML=r.data.map(v=>v.estado==='pagada'&&!v.usado?'<div style="font-size:11px;margin-top:7px">✅ Acceso pagado · 15 minutos<button class="tr-ok" style="float:right" onclick="usarReserva('+v.id+')">ENTRAR</button></div>':v.estado==='pagada'&&v.usado?'<div style="font-size:11px;margin-top:7px">🔒 Acceso utilizado · sesión consumida</div>':'<div style="font-size:11px;margin-top:7px">'+(v.estado==='rechazada'?'❌':'⏳')+' Reserva de $'+v.monto_usd+' · '+v.estado+' · '+v.metodo+(v.detalle?' · '+String(v.detalle).slice(0,55):'')+'</div>').join('');
+  if(!reservasPoll) reservasPoll=setInterval(()=>{ if(SESION&&MI) cargaReservas(); },20000);
 }
 let privateTimer=null, privateSeconds=900, privateCode='';
 async function usarReserva(id){
