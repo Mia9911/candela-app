@@ -2577,8 +2577,10 @@ async function trVentaResolver(id,comprador,chispas){
   toast('✅ Pago confirmado · ⚡'+fmt(chispas)+' acreditadas una sola vez'); openTrono();
 }
 async function trVentaRechazar(id){
-  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
-  toast('Reserva privada rechazada'); openTrono();
+  const motivo=prompt('Motivo del rechazo: referencia no coincide, pago no recibido, etc.');
+  if(!motivo||!motivo.trim()){ toast('Rechazo cancelado: falta el motivo'); return; }
+  await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada',detalle:'Rechazada: '+motivo.trim()})});
+  toast('Reserva privada rechazada con motivo guardado'); openTrono();
 }
 async function exportarCorte(){
   const r=await sbFetch('/rest/v1/reservas_privadas?select=id,monto_usd,chispas,plataforma_usd,anfitrion_usd,estado,usado,creado&estado=eq.pagada&order=creado.asc',{});
