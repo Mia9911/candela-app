@@ -2340,7 +2340,13 @@ async function cargaPagosAnfitriona(){
   const r=await sbFetch('/rest/v1/pagos_anfitrionas?select=*&anfitrion=eq.'+MI.id+'&order=creado.desc&limit=8',{});
   if(!r.ok||!r.data||!r.data.length) return;
   $('creator-payouts').style.display='block';
-  $('creator-payouts-list').innerHTML=r.data.map(x=>'<div style="font-size:11px;margin-top:7px">'+(x.estado==='pagado'?'✅':'⏳')+' $'+x.monto_usd+' · ⚡'+x.chispas+' · '+x.estado+(x.pagado?' · '+String(x.pagado).slice(0,10):'')+'</div>').join('');
+  $('creator-payouts-list').innerHTML=r.data.map(x=>'<div style="font-size:11px;margin-top:7px">'+(x.estado==='pagado'?'✅':'⏳')+' $'+x.monto_usd+' · ⚡'+x.chispas+' · '+x.estado+(x.pagado?' · '+String(x.pagado).slice(0,10):'')+' <button class="tr-ok" style="float:right;padding:4px 7px" onclick="descargarComprobante('+x.id+')">PDF/CSV</button></div>').join('');
+}
+async function descargarComprobante(id){
+  const r=await sbFetch('/rest/v1/pagos_anfitrionas?select=*&id=eq.'+id+'&limit=1',{});
+  if(!r.ok||!r.data||!r.data[0]){ toast('Comprobante no disponible'); return; }
+  const x=r.data[0], text='CANDELA · COMPROBANTE DE PAGO\nID: '+x.id+'\nEstado: '+x.estado+'\nMonto: $'+x.monto_usd+'\nChispas: '+x.chispas+'\nCreado: '+x.creado+'\nPagado: '+(x.pagado||'pendiente')+'\nDetalle: '+(x.detalle||'');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})); a.download='candela-comprobante-'+x.id+'.txt'; a.click(); toast('⬇️ Comprobante descargado');
 }
 async function cargaReservas(){
   if(!SESION||!MI||!$('private-access')) return;
