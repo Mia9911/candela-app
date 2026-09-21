@@ -825,7 +825,7 @@
     <div class="tr-sec">⚡ Consumo por acceso</div>
     <div id="tr-accesos"><div class="tr-empty">Cargando…</div></div>
     <div class="tr-sec">💎 Reservas privadas</div>
-    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">🧾 Historial de ventas privadas</div><div id="tr-ventas-hist"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">📊 Reporte financiero real</div><div id="tr-fin" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">💸 Pagos pendientes a anfitrionas</div><div id="tr-pagos"><div class="tr-empty">Cargando…</div></div>
+    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">🧾 Historial de ventas privadas</div><div id="tr-ventas-hist"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">📊 Reporte financiero real</div><div id="tr-fin" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="tr-empty">Cargando…</div></div><button class="cj-send" style="margin-top:8px" onclick="exportarCorte()">⬇️ EXPORTAR CORTE CSV</button><div class="tr-sec">💸 Pagos pendientes a anfitrionas</div><div id="tr-pagos"><div class="tr-empty">Cargando…</div></div>
   </div>
 </div>
 <div id="cajero">
@@ -2484,7 +2484,7 @@ async function openTrono(){
     sbFetch('/rest/v1/sala_accesos?select=*&order=entro.desc&limit=12',{}),
     sbFetch('/rest/v1/reservas_privadas?select=*&estado=eq.pendiente&order=creado.asc',{}),
     sbFetch('/rest/v1/reservas_privadas?select=*&order=creado.desc&limit=12',{}),
-    sbFetch('/rest/v1/reservas_privadas?select=monto_usd,chispas,estado,usado,plataforma_usd,anfitrion_usd&estado=eq.pagada',{}),
+    sbFetch('/rest/v1/reservas_privadas?select=monto_usd,chispas,estado,usado,plataforma_usd,anfitrion_usd,creado&estado=eq.pagada',{}),
     sbFetch('/rest/v1/pagos_anfitrionas?select=*&estado=eq.pendiente&order=creado.asc',{})
   ]);
   if(pu.ok&&pu.data){
@@ -2512,8 +2512,8 @@ async function openTrono(){
     $('tr-ventas-hist').innerHTML=pvh.data.length?pvh.data.map(v=>'<div class="tr-row"><span>'+(v.estado==='pagada'?'✅':'✕')+'</span><span class="tn">'+(nombres[v.comprador]||'?')+' · $'+v.monto_usd+'<small>'+v.estado+' · '+(v.usado?'usado':'sin usar')+' · '+String(v.creado).slice(0,16).replace('T',' ')+'</small></span><span class="tc">⚡'+v.chispas+'</span></div>').join(''):'<div class="tr-empty">Sin ventas todavía</div>';
   }
   if(pf.ok&&pf.data){
-    const gross=pf.data.reduce((a,x)=>a+(Number(x.monto_usd)||0),0), sparks=pf.data.reduce((a,x)=>a+(Number(x.chispas)||0),0), used=pf.data.filter(x=>x.usado).length, platform=pf.data.reduce((a,x)=>a+(Number(x.plataforma_usd)||0),0), host=pf.data.reduce((a,x)=>a+(Number(x.anfitrion_usd)||0),0);
-    $('tr-fin').innerHTML='<div class="tr-k"><b>$'+gross.toFixed(2)+'</b><span>ventas brutas</span></div><div class="tr-k"><b>$'+platform.toFixed(2)+'</b><span>margen Candela</span></div><div class="tr-k"><b>$'+host.toFixed(2)+'</b><span>pendiente anfitrionas</span></div><div class="tr-k"><b>⚡'+fmt(sparks)+'</b><span>entregadas</span></div><div class="tr-k"><b>'+pf.data.length+'</b><span>ventas pagadas</span></div><div class="tr-k"><b>'+used+'</b><span>accesos usados</span></div>';
+    const gross=pf.data.reduce((a,x)=>a+(Number(x.monto_usd)||0),0), sparks=pf.data.reduce((a,x)=>a+(Number(x.chispas)||0),0), used=pf.data.filter(x=>x.usado).length, platform=pf.data.reduce((a,x)=>a+(Number(x.plataforma_usd)||0),0), host=pf.data.reduce((a,x)=>a+(Number(x.anfitrion_usd)||0),0), month=new Date().toISOString().slice(0,7), monthly=pf.data.filter(x=>String(x.creado||'').slice(0,7)===month), mgross=monthly.reduce((a,x)=>a+(Number(x.monto_usd)||0),0);
+    $('tr-fin').innerHTML='<div class="tr-k"><b>$'+gross.toFixed(2)+'</b><span>ventas brutas</span></div><div class="tr-k"><b>$'+platform.toFixed(2)+'</b><span>margen Candela</span></div><div class="tr-k"><b>$'+host.toFixed(2)+'</b><span>pendiente anfitrionas</span></div><div class="tr-k"><b>⚡'+fmt(sparks)+'</b><span>entregadas</span></div><div class="tr-k"><b>'+pf.data.length+'</b><span>ventas pagadas</span></div><div class="tr-k"><b>'+used+'</b><span>accesos usados</span></div><div class="tr-k"><b>$'+mgross.toFixed(2)+'</b><span>corte '+month+'</span></div>';
   }
   if(pp.ok&&pp.data){
     $('tr-pagos').innerHTML=pp.data.length?pp.data.map(x=>'<div class="tr-row"><span>💸</span><span class="tn">'+(nombres[x.anfitrion]||'?')+'<small>$'+x.monto_usd+' · ⚡'+x.chispas+' · pendiente</small></span><button class="tr-ok" onclick="trPagoResolver('+x.id+')">PAGADO</button></div>').join(''):'<div class="tr-empty">No hay pagos pendientes</div>';
@@ -2536,6 +2536,13 @@ async function trVentaResolver(id,comprador,chispas){
 async function trVentaRechazar(id){
   await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
   toast('Reserva privada rechazada'); openTrono();
+}
+async function exportarCorte(){
+  const r=await sbFetch('/rest/v1/reservas_privadas?select=id,monto_usd,chispas,plataforma_usd,anfitrion_usd,estado,usado,creado&estado=eq.pagada&order=creado.asc',{});
+  if(!r.ok||!r.data||!r.data.length){ toast('Todavía no hay ventas pagadas para exportar'); return; }
+  const rows=[['id','monto_usd','chispas','margen_candela_usd','anfitriona_usd','estado','usado','creado'],...r.data.map(x=>[x.id,x.monto_usd,x.chispas,x.plataforma_usd,x.anfitrion_usd,x.estado,x.usado?'si':'no',x.creado])];
+  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='candela-corte-'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); toast('⬇️ Corte descargado');
 }
 async function trPagoResolver(id){
   const r=await sbFetch('/rest/v1/rpc/marcar_pago_anfitriona',{method:'POST',body:JSON.stringify({pago:id,nota:'pagado manual por Mia'})});
