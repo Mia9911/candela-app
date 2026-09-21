@@ -2345,7 +2345,7 @@ async function cargaPagosAnfitriona(){
 async function descargarComprobante(id){
   const r=await sbFetch('/rest/v1/pagos_anfitrionas?select=*&id=eq.'+id+'&limit=1',{});
   if(!r.ok||!r.data||!r.data[0]){ toast('Comprobante no disponible'); return; }
-  const x=r.data[0], text='CANDELA · COMPROBANTE DE PAGO\nID: '+x.id+'\nEstado: '+x.estado+'\nMonto: $'+x.monto_usd+'\nChispas: '+x.chispas+'\nCreado: '+x.creado+'\nPagado: '+(x.pagado||'pendiente')+'\nDetalle: '+(x.detalle||'');
+  const x=r.data[0], text='CANDELA · COMPROBANTE DE PAGO\nID: '+x.id+'\nEstado: '+x.estado+'\nMonto: $'+x.monto_usd+'\nChispas: '+x.chispas+'\nCreado: '+x.creado+'\nPagado: '+(x.pagado||'pendiente')+'\nAprobado por: '+(x.pagado_por||'pendiente')+'\nReferencia: '+(x.detalle||'');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})); a.download='candela-comprobante-'+x.id+'.txt'; a.click(); toast('⬇️ Comprobante descargado');
 }
 async function cargaReservas(){
