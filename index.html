@@ -825,7 +825,7 @@
     <div class="tr-sec">⚡ Consumo por acceso</div>
     <div id="tr-accesos"><div class="tr-empty">Cargando…</div></div>
     <div class="tr-sec">💎 Reservas privadas</div>
-    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">🧾 Historial de ventas privadas</div><div id="tr-ventas-hist"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">📊 Reporte financiero real</div><div id="tr-fin" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="tr-empty">Cargando…</div></div>
+    <div id="tr-ventas"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">🧾 Historial de ventas privadas</div><div id="tr-ventas-hist"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">📊 Reporte financiero real</div><div id="tr-fin" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="tr-empty">Cargando…</div></div><div class="tr-sec">💸 Pagos pendientes a anfitrionas</div><div id="tr-pagos"><div class="tr-empty">Cargando…</div></div>
   </div>
 </div>
 <div id="cajero">
@@ -2476,7 +2476,7 @@ async function cjEnviar(){
 }
 async function openTrono(){
   $('trono').classList.add('open'); lockScroll();
-  const [pu,ps,pm,pr,pa,pv,pvh,pf]=await Promise.all([
+  const [pu,ps,pm,pr,pa,pv,pvh,pf,pp]=await Promise.all([
     sbFetch('/rest/v1/perfiles?select=id,nombre,rol,chispas&order=chispas.desc',{}),
     sbFetch('/rest/v1/solicitudes?select=*&estado=eq.pendiente&order=creado.asc',{}),
     sbFetch('/rest/v1/movimientos?select=*&order=creado.desc&limit=15',{}),
@@ -2484,7 +2484,8 @@ async function openTrono(){
     sbFetch('/rest/v1/sala_accesos?select=*&order=entro.desc&limit=12',{}),
     sbFetch('/rest/v1/reservas_privadas?select=*&estado=eq.pendiente&order=creado.asc',{}),
     sbFetch('/rest/v1/reservas_privadas?select=*&order=creado.desc&limit=12',{}),
-    sbFetch('/rest/v1/reservas_privadas?select=monto_usd,chispas,estado,usado,plataforma_usd,anfitrion_usd&estado=eq.pagada',{})
+    sbFetch('/rest/v1/reservas_privadas?select=monto_usd,chispas,estado,usado,plataforma_usd,anfitrion_usd&estado=eq.pagada',{}),
+    sbFetch('/rest/v1/pagos_anfitrionas?select=*&estado=eq.pendiente&order=creado.asc',{})
   ]);
   if(pu.ok&&pu.data){
     $('tk-users').textContent=pu.data.length;
@@ -2514,6 +2515,9 @@ async function openTrono(){
     const gross=pf.data.reduce((a,x)=>a+(Number(x.monto_usd)||0),0), sparks=pf.data.reduce((a,x)=>a+(Number(x.chispas)||0),0), used=pf.data.filter(x=>x.usado).length, platform=pf.data.reduce((a,x)=>a+(Number(x.plataforma_usd)||0),0), host=pf.data.reduce((a,x)=>a+(Number(x.anfitrion_usd)||0),0);
     $('tr-fin').innerHTML='<div class="tr-k"><b>$'+gross.toFixed(2)+'</b><span>ventas brutas</span></div><div class="tr-k"><b>$'+platform.toFixed(2)+'</b><span>margen Candela</span></div><div class="tr-k"><b>$'+host.toFixed(2)+'</b><span>pendiente anfitrionas</span></div><div class="tr-k"><b>⚡'+fmt(sparks)+'</b><span>entregadas</span></div><div class="tr-k"><b>'+pf.data.length+'</b><span>ventas pagadas</span></div><div class="tr-k"><b>'+used+'</b><span>accesos usados</span></div>';
   }
+  if(pp.ok&&pp.data){
+    $('tr-pagos').innerHTML=pp.data.length?pp.data.map(x=>'<div class="tr-row"><span>💸</span><span class="tn">'+(nombres[x.anfitrion]||'?')+'<small>$'+x.monto_usd+' · ⚡'+x.chispas+' · pendiente</small></span><button class="tr-ok" onclick="trPagoResolver('+x.id+')">PAGADO</button></div>').join(''):'<div class="tr-empty">No hay pagos pendientes</div>';
+  }
 }
 function closeTrono(){ $('trono').classList.remove('open'); unlockScroll(); }
 async function trResolver(id,tipo,usuario,chispas){
@@ -2532,6 +2536,11 @@ async function trVentaResolver(id,comprador,chispas){
 async function trVentaRechazar(id){
   await sbFetch('/rest/v1/reservas_privadas?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
   toast('Reserva privada rechazada'); openTrono();
+}
+async function trPagoResolver(id){
+  const r=await sbFetch('/rest/v1/rpc/marcar_pago_anfitriona',{method:'POST',body:JSON.stringify({pago:id,nota:'pagado manual por Mia'})});
+  if(!r.ok||r.data!=='ok'){ toast(r.data==='ya-resuelto'?'⚠️ Ese pago ya fue marcado':'Error: solo la dueña puede marcar pagos'); return; }
+  toast('✅ Pago a anfitriona marcado como entregado'); openTrono();
 }
 async function trRechazar(id){
   await sbFetch('/rest/v1/solicitudes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({estado:'rechazada'})});
