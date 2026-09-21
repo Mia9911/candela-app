@@ -1200,6 +1200,7 @@
       </div>
     </div>
     <div id="private-access" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(180,83,9,.24),rgba(124,45,18,.18));border:1px solid rgba(251,191,36,.42);border-radius:16px;padding:13px"><div style="font-weight:900;color:#fde68a">💎 Mis accesos privados</div><div id="private-access-list" style="margin-top:8px"></div></div>
+    <div id="creator-payouts" style="display:none;margin:12px 0;background:linear-gradient(135deg,rgba(22,101,52,.24),rgba(6,78,59,.18));border:1px solid rgba(52,211,153,.4);border-radius:16px;padding:13px"><div style="font-weight:900;color:#a7f3d0">💸 Mis pagos de anfitriona</div><div id="creator-payouts-list" style="margin-top:8px"></div></div>
     <div class="sect">Tu centro de dinero</div>
     <div class="wmenu">
       <div class="wm" onclick="toast('💰 Retirar: 1 vez al día · tú eliges el monto (desde $5) · 1er retiro EXPRÉS <24h')"><div class="we" style="background:linear-gradient(135deg,#15803d,#166534)">💰</div><div class="wn">Retirar<small>1 vez al día · el monto que tú elijas (desde $5) · 1er retiro exprés &lt;24h 🚀</small></div><span class="wa">›</span></div>
@@ -2332,7 +2333,14 @@ async function cargaMi(){
   const r=await sbFetch('/rest/v1/perfiles?select=*&id=eq.'+(SESION.user?SESION.user.id:''),{});
   if(r.ok&&r.data&&r.data[0]){ MI=r.data[0]; bal=MI.chispas; renderBal();
     if(MI.rol==='duena'){ $('tr-btn').style.display='flex'; }
-    cargaReservas(); }
+    cargaReservas(); cargaPagosAnfitriona(); }
+}
+async function cargaPagosAnfitriona(){
+  if(!SESION||!MI||!$('creator-payouts')) return;
+  const r=await sbFetch('/rest/v1/pagos_anfitrionas?select=*&anfitrion=eq.'+MI.id+'&order=creado.desc&limit=8',{});
+  if(!r.ok||!r.data||!r.data.length) return;
+  $('creator-payouts').style.display='block';
+  $('creator-payouts-list').innerHTML=r.data.map(x=>'<div style="font-size:11px;margin-top:7px">'+(x.estado==='pagado'?'✅':'⏳')+' $'+x.monto_usd+' · ⚡'+x.chispas+' · '+x.estado+(x.pagado?' · '+String(x.pagado).slice(0,10):'')+'</div>').join('');
 }
 async function cargaReservas(){
   if(!SESION||!MI||!$('private-access')) return;
