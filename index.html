@@ -2320,7 +2320,6 @@ async function gaGo(){
       if(!r.ok){ btn.disabled=false; btn.textContent='🔥 CREAR MI CUENTA';
         return gaError(r.data&&r.data.error_code==='user_already_exists'?'Ese correo ya tiene cuenta — toca "Entra aquí" abajo':'No se pudo crear: '+(r.data&&(r.data.msg||r.data.message)||'revisa tu conexión')); }
       guardaSesion(r.data);
-      if(rol==='creadora') await sbFetch('/rest/v1/perfiles?id=eq.'+r.data.user.id,{method:'PATCH',body:JSON.stringify({rol:'creadora'})});
     } else {
       const r=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password:pass})});
       if(!r.ok){ btn.disabled=false; btn.textContent='🔥 ENTRAR'; return gaError('Correo o contraseña incorrectos'); }
@@ -2350,7 +2349,7 @@ async function guardarMetodoCobro(){
   if(!MI||!SESION) return;
   const metodo=$('pay-method').value, detalle=$('pay-detail').value.trim();
   if(!metodo||!detalle) return toast('Elige método y escribe el dato de cobro');
-  const r=await sbFetch('/rest/v1/perfiles?id=eq.'+MI.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({cobro_metodo:metodo,cobro_detalle:detalle})});
+  const r=await sbFetch('/rest/v1/rpc/editar_perfil',{method:'POST',body:JSON.stringify({p_cobro_metodo:metodo,p_cobro_detalle:detalle})});
   if(!r.ok){ toast('No se pudo guardar el método'); return; }
   MI.cobro_metodo=metodo; MI.cobro_detalle=detalle; toast('✅ Método de cobro guardado');
 }
@@ -2516,7 +2515,7 @@ function preparaDestinosPago(){
 async function guardarDestinosPago(){
   if(!MI||MI.rol!=='duena') return;
   const body={qvapay_detalle:$('cfg-qva').value.trim(),usdt_detalle:$('cfg-usdt').value.trim(),cup_detalle:$('cfg-cup').value.trim()};
-  const r=await sbFetch('/rest/v1/perfiles?id=eq.'+MI.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(body)});
+  const r=await sbFetch('/rest/v1/rpc/editar_perfil',{method:'POST',body:JSON.stringify({p_qvapay:body.qvapay_detalle,p_usdt:body.usdt_detalle,p_cup:body.cup_detalle})});
   if(!r.ok){toast('No se guardaron los destinos');return;} Object.assign(MI,body); toast('✅ Destinos de pago guardados');
 }
 async function openTrono(){
