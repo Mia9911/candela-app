@@ -2144,11 +2144,12 @@ const PARTYCHAT=[
  ['msg','Camagueyana','pónganme el asiento 5 que yo canto 😂']
 ];
 let salaCandela=null, salaInicio=0;
+let privateHostId=CASA_ID;
 async function openPrivateSale(){
   if(!SESION||!MI){ toast('🔑 Entra a tu cuenta para reservar'); $('gate').classList.add('open'); return; }
   $('privsale').style.display='flex'; lockScroll();
-  const r=await sbFetch('/rest/v1/perfiles?select=qvapay_detalle,usdt_detalle,cup_detalle&id=eq.'+CASA_ID,{});
-  const owner=r.ok&&r.data&&r.data[0]?r.data[0]:{};
+  const r=await sbFetch('/rest/v1/perfiles?select=id,qvapay_detalle,usdt_detalle,cup_detalle&rol=eq.duena&limit=1',{});
+  const owner=r.ok&&r.data&&r.data[0]?r.data[0]:{}; privateHostId=owner.id||CASA_ID;
   const show=()=>{const m=$('ps-met').value, key=m==='QvaPay'?'qvapay_detalle':m==='USDT'?'usdt_detalle':'cup_detalle'; $('ps-info').textContent=owner[key]||'La dueña aún no configuró este destino.';};
   $('ps-met').onchange=show; show();
 }
@@ -2157,7 +2158,7 @@ async function submitPrivateSale(){
   if(!SESION||!MI) return;
   const metodo=$('ps-met').value, referencia=$('ps-ref').value.trim();
   if(!referencia) return toast('Escribe la referencia del pago');
-  const r=await sbFetch('/rest/v1/reservas_privadas',{method:'POST',body:JSON.stringify({comprador:MI.id,anfitrion:CASA_ID,monto_usd:2,chispas:200,metodo,detalle:'Candela Privada · 15 minutos · Ref: '+referencia})});
+  const r=await sbFetch('/rest/v1/reservas_privadas',{method:'POST',body:JSON.stringify({comprador:MI.id,anfitrion:privateHostId,monto_usd:2,chispas:200,metodo,detalle:'Candela Privada · 15 minutos · Ref: '+referencia})});
   if(!r.ok){ toast('No salió la reserva — inténtalo otra vez'); return; }
   closePrivateSale(); toast('📨 Reserva enviada · paga $2 por '+metodo+' y espera confirmación'); confetti();
 }
